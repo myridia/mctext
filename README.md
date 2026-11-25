@@ -31,6 +31,8 @@ Or use the task runner:
 ## GUI layout
 
 ```text
+File  Edit  View  Help
+
 [New group] [New Snippets] [Rename] [Save] [Copy] [Delete] [Quit]
 
 [ Search snippets...                                  ]
@@ -43,9 +45,12 @@ Code                 Code review prompt
 Selected text:
 [ editable text area ]
 
+> command interactor
+
 Status: Copied "Email reply" to clipboard.
 ```
 
+- Use the top menu bar for **File**, **Edit**, **View** and **Help** commands.
 - Click a group to show its snippets.
 - Click a snippet to load its text.
 - Press **Copy** to copy the full text to the clipboard.

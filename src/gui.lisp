@@ -105,6 +105,7 @@
    (snippet-id :initform nil :initarg :snippet-id)
    (status :initform "Ready." :initarg :status))
   (:command-table (mctext-frame :inherit-from (clim:accept-values)))
+  (:menu-bar mctext-menu-bar)
   (:panes
    (search-pane :text-field
                 :value ""
@@ -314,6 +315,49 @@
                   :documentation "New text")
   (object)
   (list object))
+
+(define-mctext-frame-command (com-clear-search :name t) ()
+  (let ((frame *application-frame*))
+    (setf (slot-value frame 'filter) "")
+    (let ((pane (find-pane-named frame 'search-pane)))
+      (when pane (setf (gadget-value pane) "")))
+    (redisplay-pane frame 'groups-pane)
+    (redisplay-pane frame 'snippets-pane)
+    (set-status frame "Search cleared.")))
+
+(define-mctext-frame-command (com-about :name t) ()
+  (set-status *application-frame* "McText 0.1.0 - local text vault"))
+
+(define-command-table mctext-file-menu
+  :inherit-from nil
+  :menu '(("New group" :command com-new-group)
+          ("New Snippets" :command com-new-snippet-current)
+          (nil :divider nil)
+          ("Save" :command com-save-snippet)
+          (nil :divider nil)
+          ("Quit" :command com-quit)))
+
+(define-command-table mctext-edit-menu
+  :inherit-from nil
+  :menu '(("Rename" :command com-rename-current)
+          ("Copy to clipboard" :command com-copy-current)
+          (nil :divider nil)
+          ("Delete" :command com-delete-current)))
+
+(define-command-table mctext-view-menu
+  :inherit-from nil
+  :menu '(("Clear search" :command com-clear-search)))
+
+(define-command-table mctext-help-menu
+  :inherit-from nil
+  :menu '(("About McText" :command com-about)))
+
+(define-command-table mctext-menu-bar
+  :inherit-from nil
+  :menu '(("File" :menu mctext-file-menu)
+          ("Edit" :menu mctext-edit-menu)
+          ("View" :menu mctext-view-menu)
+          ("Help" :menu mctext-help-menu)))
 
 (defun initialize-frame (frame)
   (let ((group (first *groups*)))
