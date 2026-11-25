@@ -115,12 +115,14 @@
                 :display-function 'display-groups
                 :display-time :command-loop
                 :width 180
-                :height 180)
+                :height 180
+                :scroll-bars :vertical)
    (snippets-pane :application
                   :display-function 'display-snippets
                   :display-time :command-loop
                   :width 260
-                  :height 180)
+                  :height 180
+                  :scroll-bars :vertical)
    (text-pane :text-editor
               :nlines 14
               :ncolumns 78
