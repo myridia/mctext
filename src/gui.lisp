@@ -38,6 +38,27 @@
   (setf (slot-value frame 'status) message)
   (redisplay-pane frame 'status-pane))
 
+(defvar *clipboard-log-frame* nil)
+
+(defun refresh-frame-theme (frame)
+  (dolist (name '(groups-pane snippets-pane text-pane status-pane entries-pane log-status-pane))
+    (let ((pane (find-pane-named frame name)))
+      (when pane
+        (handler-case
+            (progn
+              (setf (clim:medium-background pane) (theme-background)
+                    (clim:medium-foreground pane) (theme-foreground))
+              (redisplay-frame-pane frame pane :force-p t))
+          (error () nil))))))
+
+(defun set-frame-theme (frame name)
+  (set-theme name)
+  (refresh-frame-theme frame)
+  (let ((log-frame *clipboard-log-frame*))
+    (when (and log-frame (not (eq log-frame frame)))
+      (refresh-frame-theme log-frame)))
+  (set-status frame (theme-status name)))
+
 (defun current-group (frame)
   (find-group (frame-group-id frame)))
 
@@ -130,9 +151,7 @@
                 :display-function 'display-status
                 :display-time :command-loop
                 :height 30
-                :scroll-bars nil
-                :background +gray40+
-                :foreground +white+)
+                :scroll-bars nil)
    (new-group-button :push-button :label "New group" :activate-callback 'cb-new-group)
    (new-snippet-button :push-button :label "New Snippets" :activate-callback 'cb-new-snippet)
    (rename-button :push-button :label "Rename" :activate-callback 'cb-rename)
@@ -195,9 +214,7 @@
                     :display-function 'display-log-status
                     :display-time :command-loop
                     :height 30
-                    :scroll-bars nil
-                    :background +gray40+
-                    :foreground +white+)
+                    :scroll-bars nil)
    (clear-button :push-button :label "Clear" :activate-callback 'cb-clear-log)
    (close-button :push-button :label "Close" :activate-callback 'cb-close-log))
   (:layouts
@@ -239,8 +256,11 @@
   (list object))
 
 (define-mctext-frame-command (com-show-clipboard-log :name t) ()
-  (run-frame-top-level
-   (make-application-frame 'clipboard-log-frame :width 720 :height 520)))
+  (let ((frame (make-application-frame 'clipboard-log-frame :width 720 :height 520)))
+    (setf *clipboard-log-frame* frame)
+    (unwind-protect
+         (run-frame-top-level frame)
+      (setf *clipboard-log-frame* nil))))
 
 (defun prompt-string (frame prompt &optional default)
   (declare (ignore frame))
@@ -407,16 +427,13 @@
   (set-status *application-frame* "McText 0.1.0 - local text vault"))
 
 (define-mctext-frame-command (com-theme-dark :name t) ()
-  (set-theme :dark)
-  (set-status *application-frame* (theme-status :dark)))
+  (set-frame-theme *application-frame* :dark))
 
 (define-mctext-frame-command (com-theme-light :name t) ()
-  (set-theme :light)
-  (set-status *application-frame* (theme-status :light)))
+  (set-frame-theme *application-frame* :light))
 
 (define-mctext-frame-command (com-theme-high-contrast :name t) ()
-  (set-theme :high-contrast)
-  (set-status *application-frame* (theme-status :high-contrast)))
+  (set-frame-theme *application-frame* :high-contrast))
 
 (define-command-table mctext-settings-menu
   :inherit-from nil
@@ -457,13 +474,14 @@
       (setf (slot-value frame 'snippet-id) (mctext-snippet-id snippet))
       (let ((pane (find-pane-named frame 'text-pane)))
         (when pane (setf (gadget-value pane) (or (mctext-snippet-text snippet) ""))))))
-  (redisplay-pane frame 'groups-pane)
-  (redisplay-pane frame 'snippets-pane)
-  (redisplay-pane frame 'status-pane)
+  (refresh-frame-theme frame)
   frame)
 
 (defmethod run-frame-top-level :before ((frame mctext-frame) &key)
   (initialize-frame frame))
+
+(defmethod run-frame-top-level :before ((frame clipboard-log-frame) &key)
+  (refresh-frame-theme frame))
 
 (defun gui-main ()
   (start-clipboard-watch)

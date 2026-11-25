@@ -2,7 +2,7 @@
   :version "0.1.0"
   :author "veto"
   :license "GPL-3.0-or-later"
-  :depends-on ("mcclim" "cl-json" "bordeaux-threads")
+  :depends-on ("mcclim" "cl-json" "bordeaux-threads" "anathema" "anathema-doom")
   :serial t
   :components ((:file "src/package")
                (:file "src/model")

@@ -56,7 +56,7 @@ Status: Copied "Email reply" to clipboard.
 
 ## Theme
 
-When `clim-modern` is installed (task 1), McText starts with its dark theme. Use **Settings → Dark**, **Light** or **High contrast** to switch themes while the app is open. Without it, the stock McCLIM look is used and Settings reports that task 1 is needed.
+McText starts with Anathema's Doom One dark theme, installed from Quicklisp. Use **Settings → Dark**, **Light** or **High contrast** to switch themes while the app is open.
 
 ## Clipboard
 
