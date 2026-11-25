@@ -1,0 +1,151 @@
+name: Windows
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (leave empty to skip release)'
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Release tag from caller (leave empty to use pushed tag)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+  packages: none
+
+jobs:
+  Build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install SBCL
+        shell: pwsh
+        run: |
+          function Add-ToPath($dir) {
+            if (-not $dir -or -not (Test-Path $dir)) { return }
+            if (($env:PATH -split ';') -notcontains $dir) {
+              $env:PATH = "$dir;$env:PATH"
+              "$dir" >> $env:GITHUB_PATH
+            }
+          }
+
+          function Find-Sbcl {
+            $candidates = @()
+            if ($env:ChocolateyInstall) {
+              $candidates += Join-Path $env:ChocolateyInstall 'bin\sbcl.exe'
+            }
+            $candidates += "$env:ProgramFiles\Steel Bank Common Lisp\2.6.10\sbcl.exe"
+            $candidates += "${env:ProgramFiles(x86)}\Steel Bank Common Lisp\2.6.10\sbcl.exe"
+            foreach ($candidate in $candidates) {
+              if ($candidate -and (Test-Path $candidate)) { return $candidate }
+            }
+            $roots = @($env:ProgramFiles, ${env:ProgramFiles(x86)}) | Where-Object { $_ -and (Test-Path $_) }
+            return Get-ChildItem -Path $roots -Filter sbcl.exe -Recurse -ErrorAction SilentlyContinue |
+              Select-Object -First 1 -ExpandProperty FullName
+          }
+
+          if ($env:ChocolateyInstall) {
+            Add-ToPath (Join-Path $env:ChocolateyInstall 'bin')
+          }
+
+          $installed = $false
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            Write-Host "Chocolatey SBCL install attempt $attempt"
+            choco install sbcl -y --no-progress --version 2.6.10
+            if ($LASTEXITCODE -eq 0 -and (Find-Sbcl)) {
+              $installed = $true
+              break
+            }
+            if ($attempt -lt 3) { Start-Sleep -Seconds 15 }
+          }
+
+          if (-not $installed) {
+            Write-Host "Chocolatey failed; installing SBCL from the official MSI"
+            $msi = Join-Path $env:RUNNER_TEMP 'sbcl-2.6.10-x86-64-windows-binary.msi'
+            $log = Join-Path $env:RUNNER_TEMP 'sbcl-install.log'
+            curl.exe -fsSL -o "$msi" 'https://downloads.sourceforge.net/project/sbcl/sbcl/2.6.10/sbcl-2.6.10-x86-64-windows-binary.msi'
+            if ($LASTEXITCODE -ne 0) { throw "Could not download SBCL MSI" }
+            $process = Start-Process msiexec.exe -ArgumentList "/i `"$msi`" /quiet /norestart /log `"$log`"" -Wait -PassThru
+            if ($process.ExitCode -notin @(0, 3010)) { throw "SBCL MSI install failed with exit code $($process.ExitCode)" }
+          }
+
+          $sbcl = Find-Sbcl
+          if (-not $sbcl) { throw "SBCL install did not provide sbcl.exe" }
+          Add-ToPath (Split-Path -Parent $sbcl)
+          sbcl --version
+
+      - name: Compile
+        shell: bash
+        run: |
+          echo "Compile"
+          export HOME="$USERPROFILE"
+          rm -rf bin dist/mctext && mkdir -p bin dist/mctext
+          curl -fsSL https://beta.quicklisp.org/quicklisp.lisp -o /tmp/quicklisp.lisp
+          sbcl --non-interactive \
+            --load /tmp/quicklisp.lisp \
+            --eval '(quicklisp-quickstart:install)' \
+            --eval '(sb-ext:exit)'
+          ./sdl2.sh
+          export PATH="$PWD/vendor/sdl2:$PATH"
+          sbcl --non-interactive \
+            --eval '(defparameter cl-user::*auto-start* nil)' \
+            --load main.lisp \
+            --eval '(defparameter cl-user::*bundled-font-bytes* (with-open-file (s (cl-dejavu:font-pathname "DejaVuSans.ttf") :element-type (quote (unsigned-byte 8))) (let* ((n (file-length s)) (b (make-array n :element-type (quote (unsigned-byte 8))))) (read-sequence b s) b)))' \
+            --eval '(sb-ext:save-lisp-and-die "bin/mctext" :toplevel (function clim-user:main) :executable t :compression nil :application-type :gui)'
+          exe=bin/mctext; [ -e "$exe.exe" ] && exe="$exe.exe"; cp "$exe" "dist/mctext/${exe##*/}"
+          cp vendor/sdl2/SDL2.dll dist/mctext/SDL2.dll
+
+      - name: Rename
+        shell: bash
+        run: |
+          exe=dist/mctext/mctext
+          [ -e "$exe.exe" ] && exe="$exe.exe"
+          cp "$exe" dist/mctext/mctext_windows_raw.exe
+
+      - name: Build launcher
+        shell: powershell
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File .github/scripts/make-windows-launcher.ps1 -Core dist/mctext/mctext_windows_raw.exe -Dll dist/mctext/SDL2.dll -Output dist/mctext/mctext_windows.exe
+
+      - name: Package zip
+        shell: powershell
+        run: |
+          $dir = Join-Path $env:GITHUB_WORKSPACE 'dist\mctext'
+          Compress-Archive -Force -Path (Join-Path $dir 'mctext_windows_raw.exe'),(Join-Path $dir 'SDL2.dll') -DestinationPath (Join-Path $dir 'mctext_windows.zip')
+
+      - name: Resolve release tag
+        id: release
+        shell: bash
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          tag="$INPUT_TAG"
+          if [ -z "$tag" ] && [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            tag="${GITHUB_REF#refs/tags/}"
+          fi
+          if [ -z "$tag" ]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "No release tag (not a tag push and no tag input); skipping release"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Release
+        if: steps.release.outputs.publish == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: 'dist/mctext/{mctext_windows.exe,mctext_windows_raw.exe,SDL2.dll,mctext_windows.zip}'
+          tag: ${{ steps.release.outputs.tag }}
+          overwrite: true
+          file_glob: true

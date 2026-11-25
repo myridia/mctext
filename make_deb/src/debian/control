@@ -1,0 +1,19 @@
+Source: mctext
+Section: utils
+Priority: optional
+Maintainer: veto <info@myridia.com>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13)
+Standards-Version: 4.7.2
+Homepage: https://github.com/myridia/mctext
+
+Package: mctext
+Architecture: amd64
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends}
+Description: local-first desktop text vault
+ Stores reusable text snippets in groups, searches them, and copies the
+ selected text to the system clipboard. The SBCL runtime, McText and
+ DejaVuSans.ttf are bundled in the executable.

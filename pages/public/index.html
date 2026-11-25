@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>McText — local text vault</title>
+  <meta name="description" content="McText is a local-first desktop text vault built with Common Lisp and McCLIM. Save reusable text, search it, and copy it to the system clipboard.">
+  <link rel="icon" type="image/svg+xml" href="img/mctext.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./">
+      <img src="img/mctext.svg" alt="" width="36" height="36">
+      <span>McText</span>
+    </a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#run">Run</a>
+      <a href="#start">Quick start</a>
+      <a href="https://github.com/veto8/mctext">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <img class="hero-icon" src="img/mctext.svg" alt="McText icon" width="132" height="132">
+      <div class="hero-copy">
+        <p class="eyebrow">Common Lisp · McCLIM · SBCL</p>
+        <h1>McText</h1>
+        <p class="lead">
+          A small desktop text vault for the things you type again and again:
+          email replies, shell commands, code snippets, AI prompts and notes.
+          Pick a text, press <strong>Copy</strong>, and paste it anywhere.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/veto8/mctext/releases/latest">Download latest</a>
+          <a class="button" href="https://github.com/veto8/mctext">View source</a>
+          <a class="button" href="https://github.com/veto8/mctext#readme">README</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <h2>What it does</h2>
+      <div class="cards">
+        <article>
+          <h3>Groups and snippets</h3>
+          <p>Keep texts in groups like Work, Home, Code and AI Prompts. Click a group, then click a snippet.</p>
+        </article>
+        <article>
+          <h3>Presentation-based UI</h3>
+          <p>Each group and snippet is a McCLIM presentation. Clicking a row gives the app the real object, not a row number.</p>
+        </article>
+        <article>
+          <h3>Copy to any desktop app</h3>
+          <p>Copy puts the text on the system clipboard. Paste into your browser, editor, terminal or email client.</p>
+        </article>
+        <article>
+          <h3>Search</h3>
+          <p>Filter by snippet name, text, group or tag from the search field at the top.</p>
+        </article>
+        <article>
+          <h3>Local JSON store</h3>
+          <p>Texts live in <code>~/.local/share/mctext/mctext.json</code> as versioned documents. No account, no cloud.</p>
+        </article>
+        <article>
+          <h3>Command line</h3>
+          <p>Use <code>--list</code> to see snippets and <code>--copy NAME</code> to copy one without opening the GUI.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="run">
+      <h2>Run it</h2>
+      <pre><code># run from source
+sbcl --script main.lisp
+
+# or use the task runner
+./ask.sh
+
+# list snippets without a window
+./dist/mctext/mctext --list
+
+# copy one without a window
+./dist/mctext/mctext --copy "Email reply"</code></pre>
+      <p class="hint">Linux needs <code>wl-copy</code>, <code>xclip</code> or <code>xsel</code> for clipboard copy. macOS uses <code>pbcopy</code>, Windows uses PowerShell.</p>
+    </section>
+
+    <section class="section" id="start">
+      <h2>Quick start</h2>
+      <pre><code>git clone https://github.com/veto8/mctext.git
+cd mctext
+./ask.sh          # task 1: install SBCL + Quicklisp + McCLIM
+                  # task 2: build bin/ and dist/mctext/
+                  # task 3: run from source</code></pre>
+      <p class="hint">Full details: <a href="https://github.com/veto8/mctext#readme">README.md</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    McText · <a href="https://github.com/veto8/mctext">veto8/mctext</a>
+  </footer>
+</body>
+</html>

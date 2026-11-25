@@ -1,0 +1,85 @@
+name: Macos_intel
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (leave empty to skip release)'
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Release tag from caller (leave empty to use pushed tag)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+  packages: none
+
+jobs:
+  Build:
+    runs-on: macos-15-intel
+
+    steps:
+      - name: Install
+        run: |
+          brew install sbcl curl
+          sbcl --version
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile
+        run: |
+          echo "Compile"
+          sh ask.d/setup.sh
+          sh ask.d/build.sh
+
+      - name: Rename
+        run: |
+          cp dist/mctext/mctext dist/mctext/mctext_macos_intel
+
+      - name: Check minimum macOS version
+        shell: bash
+        run: |
+          xcrun vtool -show-build dist/mctext/mctext_macos_intel
+          otool -L dist/mctext/mctext_macos_intel
+          ls -l dist/mctext/libzstd*.dylib
+          minos=$(xcrun vtool -show-build dist/mctext/mctext_macos_intel | awk '/minos/ {print $2; exit} /version/ {print $2; exit}')
+          [ "$minos" = "11.0" ] || { echo "FAIL  macOS deployment target is $minos; expected 11.0"; exit 1; }
+
+      - name: Package DMG
+        shell: bash
+        run: |
+          MCTEXT_DMG_SOURCE=dist/mctext/mctext_macos_intel sh ask.d/dmg.sh
+
+      - name: Resolve release tag
+        id: release
+        shell: bash
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          tag="$INPUT_TAG"
+          if [ -z "$tag" ] && [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            tag="${GITHUB_REF#refs/tags/}"
+          fi
+          if [ -z "$tag" ]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "No release tag (not a tag push and no tag input); skipping release"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Release
+        if: steps.release.outputs.publish == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: 'dist/mctext/{mctext_macos_intel,mctext_macos_intel.dmg,libzstd*.dylib}'
+          tag: ${{ steps.release.outputs.tag }}
+          overwrite: true
+          file_glob: true

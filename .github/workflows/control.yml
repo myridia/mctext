@@ -1,0 +1,49 @@
+name: Build Control
+on:
+  push:
+    branches: ["main"]
+    tags:
+      - '*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to upload to (leave empty to use the default tag)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+  packages: none
+  pages: write
+  id-token: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - id: resolve
+        shell: bash
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          tag="$INPUT_TAG"
+          if [ -z "$tag" ] && [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            tag="${GITHUB_REF#refs/tags/}"
+          fi
+          if [ -z "$tag" ]; then
+            tag='v0.1.0'
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+  #pages:       { if: "github.repository_owner == 'myridia'", uses: ./.github/workflows/pages.yml, secrets: inherit }
+  #linux:        { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/linux.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
+  #debian:       { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/debian.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
+#  windows:      { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/windows.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
+  macos:        { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/macos.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
+  macos_intel:  { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/macos_intel.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
+  #freebsd:      { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/freebsd.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
+  #msix:        { if: "github.repository_owner == 'myridia'", uses: ./.github/workflows/msix.yml, secrets: inherit }

@@ -1,3 +1,10 @@
+/bin/
+/dist/
+/vendor/
+/SDL2.dll
+/make_deb/src/mctext
+/make_deb/*.deb
+
 *.FASL
 *.fasl
 *.lisp-temp
