@@ -104,7 +104,7 @@
    (group-id :initform nil :initarg :group-id)
    (snippet-id :initform nil :initarg :snippet-id)
    (status :initform "Ready." :initarg :status))
-  (:command-table (mctext-frame :inherit-from (clim:accept-values-pane)))
+  (:command-table (mctext-frame :inherit-from (clim:accept-values)))
   (:panes
    (search-pane :text-field
                 :value ""
