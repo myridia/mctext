@@ -123,15 +123,17 @@
                   :width 260
                   :height 180
                   :scroll-bars :vertical)
-   (text-pane :text-editor
-              :nlines 14
-              :ncolumns 78
-              :value "")
+   (text-pane (make-pane 'text-editor-pane
+                         :nlines 14
+                         :ncolumns 78
+                         :value ""))
    (status-pane :application
                 :display-function 'display-status
                 :display-time :command-loop
-                :height 22
-                :scroll-bars nil)
+                :height 30
+                :scroll-bars nil
+                :background +gray40+
+                :foreground +white+)
    (interactor :interactor
                :height 28
                :scroll-bars nil)
