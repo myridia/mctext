@@ -9,5 +9,6 @@
                (:file "src/store")
                (:file "src/clipboard-log")
                (:file "src/clipboard")
+               (:file "src/theme")
                (:file "src/gui")
                (:file "src/cli")))

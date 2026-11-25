@@ -1,3 +1,3 @@
 (defpackage #:mctext
   (:use #:clim-lisp #:clim)
-  (:export #:run #:main))
+  (:export #:run #:main #:activate-theme))

@@ -11,23 +11,25 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 - CLX on Linux/macOS/FreeBSD, SDL2 on Windows by default
 - `cl-json` for the local document store
 - `bordeaux-threads` for the clipboard watcher
+- `clim-modern` for the dark theme and modern widgets; optional, installed by task 1
 - No network code in the app
 
 ## Structure
 - `mctext.asd` — ASDF system; depends on `mcclim`, `cl-json` and `bordeaux-threads`
-- `main.lisp` — launcher; loads Quicklisp, selects backend, quickloads `mctext`, handles bundled font, calls `mctext:main`
+- `main.lisp` — launcher; loads Quicklisp, selects backend, quickloads `mctext`, activates the optional theme backend, handles bundled font, calls `mctext:main`
 - `src/package.lisp` — `MCTEXT` package
 - `src/model.lisp` — group and snippet structs plus filter helpers
 - `src/store.lisp` — JSON document store with `id`, `_rev` and `doc`
 - `src/clipboard-log.lisp` — session-only clipboard log, watcher thread and reader commands
 - `src/clipboard.lisp` — clipboard shims for wl-copy/xclip/xsel, pbcopy and PowerShell
+- `src/theme.lisp` — optional `clim-modern` loader, theme activation and Settings status
 - `src/gui.lisp` — main frame and `clipboard-log-frame`, panes, presentation types, commands and translators
 - `src/cli.lisp` — `--list`, `--copy`, `--help` and no-window dispatch
 - `sdl2-runtime.lisp` — SDL2 runtime fix; loaded only for SDL2 builds
 - `sdl2.sh` — pins McCLIM 1.0.0 for SDL2 builds and downloads `SDL2.dll` on Windows
 - `ask.sh` — task runner menu
 - `ask.d/lib.sh` — shared task helpers
-- `ask.d/setup.sh` — task 1: install SBCL/Quicklisp and register this repo in `~/quicklisp/local-projects/mctext`
+- `ask.d/setup.sh` — task 1: install SBCL/Quicklisp, register this repo in `~/quicklisp/local-projects/mctext`, and clone `clim-modern` into `local-projects`
 - `ask.d/build.sh` — task 2: embed font and save a self-contained executable
 - `ask.d/run.sh` — task 3: run `sbcl --script main.lisp`
 - `ask.d/dmg.sh` — task 4: build a macOS `.app` and DMG
@@ -60,7 +62,8 @@ The user builds and runs all Lisp code. Do not compile or run Lisp code in the a
 
 ## Patterns
 - Frame names are `mctext-frame` and `clipboard-log-frame`; each has a command table of the same name.
-- Menu bar is `mctext-menu-bar` with File, Edit and Help menus; the log window is opened from the button row.
+- Menu bar is `mctext-menu-bar` with File, Edit, Settings and Help menus; the log window is opened from the button row.
+- Settings has Dark, Light and High contrast; the theme backend is optional and defaults to Dark when `clim-modern` is installed.
 - Presentation types are `mctext-group`, `mctext-snippet` and `clipboard-entry`.
 - Left click selects; right click opens commands from `:gesture :menu` translators; left-clicking a log entry saves it to the `Clipboard` group.
 - Clipboard copy uses external OS tools; McText does not inject keystrokes into other apps.
@@ -75,4 +78,5 @@ The user builds and runs all Lisp code. Do not compile or run Lisp code in the a
 - Do not add networking or telemetry.
 - Preserve the document store shape: `docs` entries contain `id`, `_rev` and `doc`.
 - Keep the clipboard log session-only; persist an entry only when the user clicks it.
+- Start with the dark theme when available; Settings switches themes at runtime and reports when `clim-modern` is missing.
 - Apply workspace permissions after edits: `chown -R 1000:33 <project>` and `chmod -R g+w <project>`.

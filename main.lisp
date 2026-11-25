@@ -25,6 +25,8 @@
 
 (ql:quickload :mctext)
 
+(mctext:activate-theme)
+
 (when (eq cl-user::*backend* :sdl2)
   (ql:quickload :mcclim-sdl2)
   (load (merge-pathnames "sdl2-runtime.lisp"

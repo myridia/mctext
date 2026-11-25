@@ -31,7 +31,7 @@ Or use the task runner:
 ## GUI layout
 
 ```text
-File  Edit  Help
+File  Edit  Settings  Help
 
 [New group] [New Snippets] [Rename] [Save] [Copy] [Delete] [Clipboard log] [Quit]
 
@@ -46,13 +46,17 @@ Selected text:
 Status: Copied "Email reply" to clipboard.
 ```
 
-- Use the top menu bar for **File**, **Edit** and **Help** commands.
+- Use the top menu bar for **File**, **Edit**, **Settings** and **Help** commands.
 - Click a group to show its snippets.
 - Click a snippet to load its text.
 - Press **Copy** to copy the full text to the clipboard.
 - Right-click a snippet for **Copy to clipboard** or **Delete**.
 - Right-click a group to create a new snippet in it.
 - Press **Clipboard log** to open the session log.
+
+## Theme
+
+When `clim-modern` is installed (task 1), McText starts with its dark theme. Use **Settings → Dark**, **Light** or **High contrast** to switch themes while the app is open. Without it, the stock McCLIM look is used and Settings reports that task 1 is needed.
 
 ## Clipboard
 

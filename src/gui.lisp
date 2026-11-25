@@ -406,6 +406,24 @@
 (define-mctext-frame-command (com-about :name t) ()
   (set-status *application-frame* "McText 0.1.0 - local text vault"))
 
+(define-mctext-frame-command (com-theme-dark :name t) ()
+  (set-theme :dark)
+  (set-status *application-frame* (theme-status :dark)))
+
+(define-mctext-frame-command (com-theme-light :name t) ()
+  (set-theme :light)
+  (set-status *application-frame* (theme-status :light)))
+
+(define-mctext-frame-command (com-theme-high-contrast :name t) ()
+  (set-theme :high-contrast)
+  (set-status *application-frame* (theme-status :high-contrast)))
+
+(define-command-table mctext-settings-menu
+  :inherit-from nil
+  :menu (("Dark" :command com-theme-dark)
+          ("Light" :command com-theme-light)
+          ("High contrast" :command com-theme-high-contrast)))
+
 (define-command-table mctext-file-menu
   :inherit-from nil
   :menu (("New group" :command com-new-group)
@@ -427,6 +445,7 @@
   :inherit-from nil
   :menu (("File" :menu mctext-file-menu)
           ("Edit" :menu mctext-edit-menu)
+          ("Settings" :menu mctext-settings-menu)
           ("Help" :menu mctext-help-menu)))
 
 (defun initialize-frame (frame)

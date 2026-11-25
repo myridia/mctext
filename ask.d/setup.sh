@@ -115,6 +115,17 @@ elif [ ! -e "$local_projects/mctext" ]; then
 fi
 printf "ok    local project mctext\n"
 
+clim_modern="$local_projects/clim-modern"
+if [ -f "$clim_modern/clim-modern.asd" ]; then
+  printf "ok    local project clim-modern\n"
+elif command -v git >/dev/null 2>&1; then
+  git clone --depth 1 https://git.sr.ht/~hajovonta/clim-modern "$clim_modern" >/dev/null 2>&1 \
+    && printf "ok    local project clim-modern\n" \
+    || printf "FAIL  clim-modern clone failed\n"
+else
+  printf "FAIL  git missing; clone clim-modern into %s\n" "$clim_modern"
+fi
+
 "$ROOT/sdl2.sh"
 
 case "$(uname -s)" in
