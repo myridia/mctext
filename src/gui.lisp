@@ -41,7 +41,7 @@
 (defvar *clipboard-log-frame* nil)
 
 (defun refresh-frame-theme (frame)
-  (dolist (name '(groups-pane snippets-pane text-pane status-pane entries-pane log-status-pane))
+  (dolist (name '(groups-pane snippets-pane text-pane entries-pane))
     (let ((pane (find-pane-named frame name)))
       (when pane
         (handler-case
@@ -151,7 +151,9 @@
                 :display-function 'display-status
                 :display-time :command-loop
                 :height 30
-                :scroll-bars nil)
+                :scroll-bars nil
+                :background +gray40+
+                :foreground +white+)
    (new-group-button :push-button :label "New group" :activate-callback 'cb-new-group)
    (new-snippet-button :push-button :label "New Snippets" :activate-callback 'cb-new-snippet)
    (rename-button :push-button :label "Rename" :activate-callback 'cb-rename)
@@ -214,7 +216,9 @@
                     :display-function 'display-log-status
                     :display-time :command-loop
                     :height 30
-                    :scroll-bars nil)
+                    :scroll-bars nil
+                    :background +gray40+
+                    :foreground +white+)
    (clear-button :push-button :label "Clear" :activate-callback 'cb-clear-log)
    (close-button :push-button :label "Close" :activate-callback 'cb-close-log))
   (:layouts
