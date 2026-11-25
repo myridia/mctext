@@ -130,7 +130,7 @@
                 :height 22)
    (interactor :interactor :height 28)
    (new-group-button :push-button :label "New group" :activate-callback 'cb-new-group)
-   (new-snippet-button :push-button :label "New text" :activate-callback 'cb-new-snippet)
+   (new-snippet-button :push-button :label "New Snippets" :activate-callback 'cb-new-snippet)
    (rename-button :push-button :label "Rename" :activate-callback 'cb-rename)
    (save-button :push-button :label "Save" :activate-callback 'cb-save)
    (copy-button :push-button :label "Copy" :activate-callback 'cb-copy)
@@ -139,11 +139,6 @@
   (:layouts
    (default
     (vertically (:spacing 4)
-      search-pane
-      (horizontally (:spacing 6)
-        (labelling (:label "Groups") groups-pane)
-        (labelling (:label "Snippets") snippets-pane))
-      (labelling (:label "Text") text-pane)
       (horizontally (:spacing 4)
         new-group-button
         new-snippet-button
@@ -152,8 +147,13 @@
         copy-button
         delete-button
         quit-button)
-      status-pane
-      interactor))))
+      search-pane
+      (horizontally (:spacing 6)
+        (labelling (:label "Groups") groups-pane)
+        (labelling (:label "Snippets") snippets-pane))
+      (labelling (:label "Text") text-pane)
+      interactor
+      status-pane))))
 
 (defun prompt-string (frame prompt &optional default)
   (let ((stream (find-pane-named frame 'interactor))

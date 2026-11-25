@@ -31,6 +31,8 @@ Or use the task runner:
 ## GUI layout
 
 ```text
+[New group] [New Snippets] [Rename] [Save] [Copy] [Delete] [Quit]
+
 [ Search snippets...                                  ]
 
 Groups               Snippets
@@ -41,7 +43,6 @@ Code                 Code review prompt
 Selected text:
 [ editable text area ]
 
-[New group] [New text] [Rename] [Save] [Copy] [Delete] [Quit]
 Status: Copied "Email reply" to clipboard.
 ```
 
