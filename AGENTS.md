@@ -3,23 +3,25 @@
 ## What this is
 A local-first desktop text vault built with Common Lisp, McCLIM and SBCL. It stores reusable snippets in groups, shows them as clickable presentations, and copies the selected text to the system clipboard.
 
-The app is a full McCLIM application frame with search, groups, snippets, an editable text pane, buttons, status output and an interactor pane. It also has a no-window command line mode.
+The app has a main McCLIM frame with groups, snippets, an editable text pane, buttons and status output, plus a second `clipboard-log-frame` window that lists text seen on the desktop clipboard during the current session. It also has a no-window command line mode.
 
 ## Stack
 - Common Lisp (SBCL)
 - McCLIM via Quicklisp
 - CLX on Linux/macOS/FreeBSD, SDL2 on Windows by default
 - `cl-json` for the local document store
+- `bordeaux-threads` for the clipboard watcher
 - No network code in the app
 
 ## Structure
-- `mctext.asd` — ASDF system; depends on `mcclim` and `cl-json`
+- `mctext.asd` — ASDF system; depends on `mcclim`, `cl-json` and `bordeaux-threads`
 - `main.lisp` — launcher; loads Quicklisp, selects backend, quickloads `mctext`, handles bundled font, calls `mctext:main`
 - `src/package.lisp` — `MCTEXT` package
 - `src/model.lisp` — group and snippet structs plus filter helpers
 - `src/store.lisp` — JSON document store with `id`, `_rev` and `doc`
+- `src/clipboard-log.lisp` — session-only clipboard log, watcher thread and reader commands
 - `src/clipboard.lisp` — clipboard shims for wl-copy/xclip/xsel, pbcopy and PowerShell
-- `src/gui.lisp` — application frame, panes, presentation types, commands and translators
+- `src/gui.lisp` — main frame and `clipboard-log-frame`, panes, presentation types, commands and translators
 - `src/cli.lisp` — `--list`, `--copy`, `--help` and no-window dispatch
 - `sdl2-runtime.lisp` — SDL2 runtime fix; loaded only for SDL2 builds
 - `sdl2.sh` — pins McCLIM 1.0.0 for SDL2 builds and downloads `SDL2.dll` on Windows
@@ -57,11 +59,13 @@ Built executable:
 The user builds and runs all Lisp code. Do not compile or run Lisp code in the agent environment.
 
 ## Patterns
-- Frame name is `mctext-frame`; command table is `mctext-frame`.
-- Menu bar is `mctext-menu-bar` with File, Edit, View and Help menus.
-- Presentation types are `mctext-group` and `mctext-snippet`.
-- Left click selects; right click opens commands from `:gesture :menu` translators.
+- Frame names are `mctext-frame` and `clipboard-log-frame`; each has a command table of the same name.
+- Menu bar is `mctext-menu-bar` with File, Edit and Help menus; the log window is opened from the button row.
+- Presentation types are `mctext-group`, `mctext-snippet` and `clipboard-entry`.
+- Left click selects; right click opens commands from `:gesture :menu` translators; left-clicking a log entry saves it to the `Clipboard` group.
 - Clipboard copy uses external OS tools; McText does not inject keystrokes into other apps.
+- The watcher polls `wl-paste`, X11 CLIPBOARD/PRIMARY via `xclip`/`xsel`, `pbpaste` and PowerShell, deduplicates text, and ignores McText's own writes.
+- The log exists only in memory for one GUI session; only clicked entries are written to the JSON store. Wayland needs a compositor/portal helper for reliable background watching.
 - Store path is `~/.local/share/mctext/mctext.json` on POSIX and `%APPDATA%\McText\mctext.json` on Windows.
 - `MCTEXT_BACKEND` overrides backend; `MCCLIM_BACKEND` is accepted as a fallback.
 
@@ -70,4 +74,5 @@ The user builds and runs all Lisp code. Do not compile or run Lisp code in the a
 - No comments in code unless asked.
 - Do not add networking or telemetry.
 - Preserve the document store shape: `docs` entries contain `id`, `_rev` and `doc`.
+- Keep the clipboard log session-only; persist an entry only when the user clicks it.
 - Apply workspace permissions after edits: `chown -R 1000:33 <project>` and `chmod -R g+w <project>`.

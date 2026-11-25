@@ -2,11 +2,12 @@
   :version "0.1.0"
   :author "veto"
   :license "GPL-3.0-or-later"
-  :depends-on ("mcclim" "cl-json")
+  :depends-on ("mcclim" "cl-json" "bordeaux-threads")
   :serial t
   :components ((:file "src/package")
                (:file "src/model")
                (:file "src/store")
+               (:file "src/clipboard-log")
                (:file "src/clipboard")
                (:file "src/gui")
                (:file "src/cli")))

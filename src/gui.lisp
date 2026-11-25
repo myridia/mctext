@@ -12,8 +12,14 @@
   (declare (ignore type view))
   (format stream "~A" (or (mctext-snippet-name snippet) "")))
 
-(defun frame-filter (frame)
-  (slot-value frame 'filter))
+(define-presentation-type clipboard-entry ())
+
+(define-presentation-method present (entry (type clipboard-entry) stream (view textual-view) &key)
+  (declare (ignore type view))
+  (format stream "~A  [~A]  ~A"
+          (clipboard-entry-time-string entry)
+          (or (clipboard-entry-source entry) "")
+          (clipboard-entry-preview entry)))
 
 (defun frame-group-id (frame)
   (slot-value frame 'group-id))
@@ -48,24 +54,18 @@
       (update-snippet-text snippet (or (text-pane-value frame) "")))))
 
 (defun display-groups (frame stream)
-  (dolist (group (visible-groups (frame-filter frame)))
+  (declare (ignore frame))
+  (dolist (group *groups*)
     (present group 'mctext-group :stream stream)
     (terpri stream)))
 
 (defun display-snippets (frame stream)
-  (dolist (snippet (visible-snippets (frame-group-id frame) (frame-filter frame)))
+  (dolist (snippet (visible-snippets (frame-group-id frame) ""))
     (present snippet 'mctext-snippet :stream stream)
     (terpri stream)))
 
 (defun display-status (frame stream)
   (write-string (or (frame-status frame) "") stream))
-
-(defun search-changed (gadget value)
-  (declare (ignore gadget))
-  (with-application-frame (frame)
-    (setf (slot-value frame 'filter) value)
-    (redisplay-pane frame 'groups-pane)
-    (redisplay-pane frame 'snippets-pane)))
 
 (defun invoke-command (command)
   (with-application-frame (frame)
@@ -99,18 +99,17 @@
   (declare (ignore gadget))
   (invoke-command '(com-quit)))
 
+(defun cb-show-log (gadget)
+  (declare (ignore gadget))
+  (invoke-command '(com-show-clipboard-log)))
+
 (define-application-frame mctext-frame ()
-  ((filter :initform "" :initarg :filter)
-   (group-id :initform nil :initarg :group-id)
+  ((group-id :initform nil :initarg :group-id)
    (snippet-id :initform nil :initarg :snippet-id)
    (status :initform "Ready." :initarg :status))
   (:command-table (mctext-frame :inherit-from (clim:accept-values)))
   (:menu-bar mctext-menu-bar)
   (:panes
-   (search-pane :text-field
-                :value ""
-                :width 300
-                :value-changed-callback 'search-changed)
    (groups-pane :application
                 :display-function 'display-groups
                 :display-time :command-loop
@@ -134,15 +133,13 @@
                 :scroll-bars nil
                 :background +gray40+
                 :foreground +white+)
-   (interactor :interactor
-               :height 28
-               :scroll-bars nil)
    (new-group-button :push-button :label "New group" :activate-callback 'cb-new-group)
    (new-snippet-button :push-button :label "New Snippets" :activate-callback 'cb-new-snippet)
    (rename-button :push-button :label "Rename" :activate-callback 'cb-rename)
    (save-button :push-button :label "Save" :activate-callback 'cb-save)
    (copy-button :push-button :label "Copy" :activate-callback 'cb-copy)
    (delete-button :push-button :label "Delete" :activate-callback 'cb-delete)
+   (log-button :push-button :label "Clipboard log" :activate-callback 'cb-show-log)
    (quit-button :push-button :label "Quit" :activate-callback 'cb-quit))
   (:layouts
    (default
@@ -154,18 +151,100 @@
         save-button
         copy-button
         delete-button
+        log-button
         quit-button)
-      search-pane
       (horizontally (:spacing 6)
         (labelling (:label "Groups") groups-pane)
         (labelling (:label "Snippets") snippets-pane))
       (labelling (:label "Text")
         (scrolling (:scroll-bar :vertical :height 240) text-pane))
-      interactor
       status-pane))))
 
+(defun display-log-entries (frame stream)
+  (declare (ignore frame))
+  (let ((entries (clipboard-entries)))
+    (if entries
+        (dolist (entry entries)
+          (present entry 'clipboard-entry :stream stream)
+          (terpri stream))
+        (write-string "No clipboard text recorded yet." stream))))
+
+(defun display-log-status (frame stream)
+  (write-string (or (slot-value frame 'status) "") stream))
+
+(defun cb-clear-log (gadget)
+  (declare (ignore gadget))
+  (invoke-command '(com-clear-clipboard-log)))
+
+(defun cb-close-log (gadget)
+  (declare (ignore gadget))
+  (invoke-command '(com-close-log)))
+
+(define-application-frame clipboard-log-frame ()
+  ((status :initform "Click an entry to save it." :initarg :status))
+  (:command-table (clipboard-log-frame :inherit-from (clim:accept-values)))
+  (:menu-bar nil)
+  (:panes
+   (entries-pane :application
+                 :display-function 'display-log-entries
+                 :display-time :command-loop
+                 :width 620
+                 :height 360
+                 :scroll-bars :vertical)
+   (log-status-pane :application
+                    :display-function 'display-log-status
+                    :display-time :command-loop
+                    :height 30
+                    :scroll-bars nil
+                    :background +gray40+
+                    :foreground +white+)
+   (clear-button :push-button :label "Clear" :activate-callback 'cb-clear-log)
+   (close-button :push-button :label "Close" :activate-callback 'cb-close-log))
+  (:layouts
+   (default
+    (vertically (:spacing 4)
+      (labelling (:label "Clipboard log (this session only)") entries-pane)
+      (horizontally (:spacing 4) clear-button close-button)
+      log-status-pane))))
+
+(define-clipboard-log-frame-command (com-add-clipboard-entry :name t) ((entry 'clipboard-entry))
+  (let* ((group (or (find-group "group-clipboard") (add-group "Clipboard")))
+         (snippet (add-snippet (mctext-group-id group)
+                               (format nil "Clipboard ~A"
+                                       (clipboard-entry-time-string entry))))
+         (frame *application-frame*))
+    (setf (mctext-snippet-tags snippet) (list "clipboard"))
+    (update-snippet-text snippet (clipboard-entry-text entry))
+    (remove-clipboard-entry entry)
+    (setf (slot-value frame 'status)
+          (format nil "Saved ~A" (clipboard-entry-preview entry)))
+    (redisplay-pane frame 'entries-pane)
+    (redisplay-pane frame 'log-status-pane)))
+
+(define-clipboard-log-frame-command (com-clear-clipboard-log :name t) ()
+  (let ((frame *application-frame*))
+    (clear-clipboard-log)
+    (setf (slot-value frame 'status) "Clipboard log cleared.")
+    (redisplay-pane frame 'entries-pane)
+    (redisplay-pane frame 'log-status-pane)))
+
+(define-clipboard-log-frame-command (com-close-log :name t) ()
+  (frame-exit *application-frame*))
+
+(define-presentation-to-command-translator add-clipboard-entry
+    (clipboard-entry com-add-clipboard-entry clipboard-log-frame
+                     :gesture :select
+                     :documentation "Save in snippets")
+  (object)
+  (list object))
+
+(define-mctext-frame-command (com-show-clipboard-log :name t) ()
+  (run-frame-top-level
+   (make-application-frame 'clipboard-log-frame :width 720 :height 520)))
+
 (defun prompt-string (frame prompt &optional default)
-  (let ((stream (find-pane-named frame 'interactor))
+  (declare (ignore frame))
+  (let ((stream *query-io*)
         (result nil))
     (accepting-values (stream :own-window t
                               :exit-boxes '((:exit "OK") (:abort "Cancel")))
@@ -188,7 +267,7 @@
   (let ((frame *application-frame*))
     (setf (slot-value frame 'group-id) (mctext-group-id group))
     (setf (slot-value frame 'snippet-id) nil)
-    (let ((first (first (visible-snippets (mctext-group-id group) (frame-filter frame)))))
+    (let ((first (first (visible-snippets (mctext-group-id group) ""))))
       (select-snippet frame first))
     (redisplay-pane frame 'snippets-pane)
     (set-status frame (format nil "Group ~A" (mctext-group-name group)))))
@@ -324,15 +403,6 @@
   (object)
   (list object))
 
-(define-mctext-frame-command (com-clear-search :name t) ()
-  (let ((frame *application-frame*))
-    (setf (slot-value frame 'filter) "")
-    (let ((pane (find-pane-named frame 'search-pane)))
-      (when pane (setf (gadget-value pane) "")))
-    (redisplay-pane frame 'groups-pane)
-    (redisplay-pane frame 'snippets-pane)
-    (set-status frame "Search cleared.")))
-
 (define-mctext-frame-command (com-about :name t) ()
   (set-status *application-frame* "McText 0.1.0 - local text vault"))
 
@@ -340,21 +410,14 @@
   :inherit-from nil
   :menu (("New group" :command com-new-group)
           ("New Snippets" :command com-new-snippet-current)
-          ("divider" :divider nil)
           ("Save" :command com-save-snippet)
-          ("divider" :divider nil)
           ("Quit" :command com-quit)))
 
 (define-command-table mctext-edit-menu
   :inherit-from nil
   :menu (("Rename" :command com-rename-current)
           ("Copy to clipboard" :command com-copy-current)
-          ("divider" :divider nil)
           ("Delete" :command com-delete-current)))
-
-(define-command-table mctext-view-menu
-  :inherit-from nil
-  :menu (("Clear search" :command com-clear-search)))
 
 (define-command-table mctext-help-menu
   :inherit-from nil
@@ -364,7 +427,6 @@
   :inherit-from nil
   :menu (("File" :menu mctext-file-menu)
           ("Edit" :menu mctext-edit-menu)
-          ("View" :menu mctext-view-menu)
           ("Help" :menu mctext-help-menu)))
 
 (defun initialize-frame (frame)
@@ -385,5 +447,8 @@
   (initialize-frame frame))
 
 (defun gui-main ()
-  (run-frame-top-level
-   (make-application-frame 'mctext-frame :width 960 :height 640)))
+  (start-clipboard-watch)
+  (unwind-protect
+       (run-frame-top-level
+        (make-application-frame 'mctext-frame :width 960 :height 640))
+    (stop-clipboard-watch)))

@@ -31,11 +31,9 @@ Or use the task runner:
 ## GUI layout
 
 ```text
-File  Edit  View  Help
+File  Edit  Help
 
-[New group] [New Snippets] [Rename] [Save] [Copy] [Delete] [Quit]
-
-[ Search snippets...                                  ]
+[New group] [New Snippets] [Rename] [Save] [Copy] [Delete] [Clipboard log] [Quit]
 
 Groups               Snippets
 Work                 Email reply
@@ -45,17 +43,16 @@ Code                 Code review prompt
 Selected text:
 [ editable text area                                  ↕ ]
 
-> command interactor
-
 Status: Copied "Email reply" to clipboard.
 ```
 
-- Use the top menu bar for **File**, **Edit**, **View** and **Help** commands.
+- Use the top menu bar for **File**, **Edit** and **Help** commands.
 - Click a group to show its snippets.
 - Click a snippet to load its text.
 - Press **Copy** to copy the full text to the clipboard.
 - Right-click a snippet for **Copy to clipboard** or **Delete**.
 - Right-click a group to create a new snippet in it.
+- Press **Clipboard log** to open the session log.
 
 ## Clipboard
 
@@ -64,6 +61,12 @@ Status: Copied "Email reply" to clipboard.
 - Windows: PowerShell `Set-Clipboard`
 
 McText does not inject text into other apps. It writes to the system clipboard; you paste with the normal paste command of the target app.
+
+## Clipboard log
+
+While the GUI is open, McText polls the desktop clipboard and keeps a session-only list of distinct texts. The **Clipboard log** window shows each entry with its time, source and a preview. Click an entry to save the full text as a snippet in the **Clipboard** group; nothing is written to the JSON store until you click. **Clear** empties the session list; **Close** returns to the main window.
+
+Linux reads `wl-paste` plus X11 CLIPBOARD and PRIMARY through `xclip`/`xsel`; macOS reads `pbpaste`; Windows reads PowerShell `Get-Clipboard`. Wayland needs a compositor/portal helper for reliable background watching. McText's own copies are skipped.
 
 ## Storage
 
