@@ -128,6 +128,7 @@
   ((group-id :initform nil :initarg :group-id)
    (snippet-id :initform nil :initarg :snippet-id)
    (status :initform "Ready." :initarg :status))
+  (:reinitialize-frames t)
   (:command-table (mctext-frame :inherit-from (clim:accept-values)))
   (:menu-bar mctext-menu-bar)
   (:panes
@@ -203,6 +204,7 @@
 
 (define-application-frame clipboard-log-frame ()
   ((status :initform "Click an entry to save it." :initarg :status))
+  (:reinitialize-frames t)
   (:command-table (clipboard-log-frame :inherit-from (clim:accept-values)))
   (:menu-bar nil)
   (:panes

@@ -18,6 +18,18 @@ Or use the task runner:
 ./ask.sh
 ```
 
+## Interactive development
+
+Run task 6 in `./ask.sh` to start a REPL with reload helpers. The McCLIM frames use `:reinitialize-frames t`, so reloading `src/gui.lisp` rebuilds panes and layouts in the open window.
+
+```lisp
+(dev-start)
+(dev-reload)
+(dev-force-reload)
+```
+
+`dev-reload` lets ASDF recompile changed files. `dev-force-reload` recompiles every mctext file. If you edit `main.lisp` or `dev.lisp`, reload the dev script with `(load "dev.lisp")`.
+
 ## Command line
 
 ```sh

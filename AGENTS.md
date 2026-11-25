@@ -17,6 +17,7 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 ## Structure
 - `mctext.asd` — ASDF system; depends on `mcclim`, `cl-json`, `bordeaux-threads`, `anathema` and `anathema-doom`
 - `main.lisp` — launcher; loads Quicklisp, selects backend, quickloads `mctext`, activates the Anathema dark theme, handles bundled font, calls `mctext:main`
+- `dev.lisp` — development REPL loader with `dev-start`, `dev-reload` and `dev-force-reload`
 - `src/package.lisp` — `MCTEXT` package
 - `src/model.lisp` — group and snippet structs plus filter helpers
 - `src/store.lisp` — JSON document store with `id`, `_rev` and `doc`
@@ -34,6 +35,7 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 - `ask.d/run.sh` — task 3: run `sbcl --script main.lisp`
 - `ask.d/dmg.sh` — task 4: build a macOS `.app` and DMG
 - `ask.d/clean.sh` — task 5: remove build outputs
+- `ask.d/dev.sh` — task 6: start the development REPL with reload helpers
 - `README.md` — project title, logo and commands
 - `mctext.svg` — README logo
 - `pages/public/` — GitHub Pages site
@@ -62,6 +64,7 @@ The user builds and runs all Lisp code. Do not compile or run Lisp code in the a
 
 ## Patterns
 - Frame names are `mctext-frame` and `clipboard-log-frame`; each has a command table of the same name.
+- Both frames use `:reinitialize-frames t` so reloading `src/gui.lisp` rebuilds panes and layouts in running windows.
 - Menu bar is `mctext-menu-bar` with File, Edit, Settings and Help menus; the log window is opened from the button row.
 - Settings has Dark, Light and High contrast; startup uses Anathema's Doom One dark theme.
 - Presentation types are `mctext-group`, `mctext-snippet` and `clipboard-entry`.
