@@ -20,15 +20,17 @@ Or use the task runner:
 
 ## Interactive development
 
-Run task 6 in `./ask.sh` to start a REPL with reload helpers. The McCLIM frames use `:reinitialize-frames t`, so reloading `src/gui.lisp` rebuilds panes and layouts in the open window.
+Run task 6 in `./ask.sh` to start a REPL with the GUI already open. A source watcher reloads `src/*.lisp` and `mctext.asd` automatically when a file changes. The McCLIM frames use `:reinitialize-frames t`, so a reload of `src/gui.lisp` rebuilds panes and layouts in the open window.
 
 ```lisp
-(dev-start)
-(dev-reload)
-(dev-force-reload)
+(clim-user:dev-reload)
+(clim-user:dev-force-reload)
+(clim-user:dev-watch-stop)
+(clim-user:dev-watch-start)
+(clim-user:dev-start)
 ```
 
-`dev-reload` lets ASDF recompile changed files. `dev-force-reload` recompiles every mctext file. If you edit `main.lisp` or `dev.lisp`, reload the dev script with `(load "dev.lisp")`.
+`dev-reload` lets ASDF recompile changed files. `dev-force-reload` recompiles every mctext file. `dev-watch-stop` disables automatic reload; `dev-watch-start` enables it again. `dev-start` reopens the GUI if you close the window and restarts watching if needed. If you edit `main.lisp` or `dev.lisp`, reload the dev script with `(load "dev.lisp")`.
 
 ## Command line
 

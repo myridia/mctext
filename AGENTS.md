@@ -17,7 +17,7 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 ## Structure
 - `mctext.asd` — ASDF system; depends on `mcclim`, `cl-json`, `bordeaux-threads`, `anathema` and `anathema-doom`
 - `main.lisp` — launcher; loads Quicklisp, selects backend, quickloads `mctext`, activates the Anathema dark theme, handles bundled font, calls `mctext:main`
-- `dev.lisp` — development REPL loader with `dev-start`, `dev-reload` and `dev-force-reload`
+- `dev.lisp` — development REPL loader with `dev-start`, `dev-reload`, `dev-force-reload`, `dev-watch-start` and `dev-watch-stop`
 - `src/package.lisp` — `MCTEXT` package
 - `src/model.lisp` — group and snippet structs plus filter helpers
 - `src/store.lisp` — JSON document store with `id`, `_rev` and `doc`
@@ -35,7 +35,7 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 - `ask.d/run.sh` — task 3: run `sbcl --script main.lisp`
 - `ask.d/dmg.sh` — task 4: build a macOS `.app` and DMG
 - `ask.d/clean.sh` — task 5: remove build outputs
-- `ask.d/dev.sh` — task 6: start the development REPL with reload helpers
+- `ask.d/dev.sh` — task 6: start the GUI and a development REPL with automatic reload on source changes
 - `README.md` — project title, logo and commands
 - `mctext.svg` — README logo
 - `pages/public/` — GitHub Pages site

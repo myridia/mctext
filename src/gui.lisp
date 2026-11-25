@@ -129,6 +129,7 @@
    (snippet-id :initform nil :initarg :snippet-id)
    (status :initform "Ready." :initarg :status))
   (:reinitialize-frames t)
+  (:pretty-name "McText")
   (:command-table (mctext-frame :inherit-from (clim:accept-values)))
   (:menu-bar mctext-menu-bar)
   (:panes
