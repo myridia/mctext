@@ -58,6 +58,7 @@ The user builds and runs all Lisp code. Do not compile or run Lisp code in the a
 
 ## Patterns
 - Frame name is `mctext-frame`; command table is `mctext-frame`.
+- Menu bar is `mctext-menu-bar` with File, Edit, View and Help menus.
 - Presentation types are `mctext-group` and `mctext-snippet`.
 - Left click selects; right click opens commands from `:gesture :menu` translators.
 - Clipboard copy uses external OS tools; McText does not inject keystrokes into other apps.

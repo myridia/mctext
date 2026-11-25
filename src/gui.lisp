@@ -128,8 +128,11 @@
    (status-pane :application
                 :display-function 'display-status
                 :display-time :command-loop
-                :height 22)
-   (interactor :interactor :height 28)
+                :height 22
+                :scroll-bars nil)
+   (interactor :interactor
+               :height 28
+               :scroll-bars nil)
    (new-group-button :push-button :label "New group" :activate-callback 'cb-new-group)
    (new-snippet-button :push-button :label "New Snippets" :activate-callback 'cb-new-snippet)
    (rename-button :push-button :label "Rename" :activate-callback 'cb-rename)
@@ -152,7 +155,8 @@
       (horizontally (:spacing 6)
         (labelling (:label "Groups") groups-pane)
         (labelling (:label "Snippets") snippets-pane))
-      (labelling (:label "Text") text-pane)
+      (labelling (:label "Text")
+        (scrolling (:scroll-bar :vertical :height 240) text-pane))
       interactor
       status-pane))))
 
@@ -330,31 +334,31 @@
 
 (define-command-table mctext-file-menu
   :inherit-from nil
-  :menu '(("New group" :command com-new-group)
+  :menu (("New group" :command com-new-group)
           ("New Snippets" :command com-new-snippet-current)
-          (nil :divider nil)
+          ("divider" :divider nil)
           ("Save" :command com-save-snippet)
-          (nil :divider nil)
+          ("divider" :divider nil)
           ("Quit" :command com-quit)))
 
 (define-command-table mctext-edit-menu
   :inherit-from nil
-  :menu '(("Rename" :command com-rename-current)
+  :menu (("Rename" :command com-rename-current)
           ("Copy to clipboard" :command com-copy-current)
-          (nil :divider nil)
+          ("divider" :divider nil)
           ("Delete" :command com-delete-current)))
 
 (define-command-table mctext-view-menu
   :inherit-from nil
-  :menu '(("Clear search" :command com-clear-search)))
+  :menu (("Clear search" :command com-clear-search)))
 
 (define-command-table mctext-help-menu
   :inherit-from nil
-  :menu '(("About McText" :command com-about)))
+  :menu (("About McText" :command com-about)))
 
 (define-command-table mctext-menu-bar
   :inherit-from nil
-  :menu '(("File" :menu mctext-file-menu)
+  :menu (("File" :menu mctext-file-menu)
           ("Edit" :menu mctext-edit-menu)
           ("View" :menu mctext-view-menu)
           ("Help" :menu mctext-help-menu)))

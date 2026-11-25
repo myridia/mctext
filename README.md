@@ -43,7 +43,7 @@ Home                 Common shell commands
 Code                 Code review prompt
 
 Selected text:
-[ editable text area ]
+[ editable text area                                  ↕ ]
 
 > command interactor
 
