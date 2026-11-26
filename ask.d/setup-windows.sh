@@ -26,63 +26,74 @@ fi
 ql_setup="$home_posix/quicklisp/setup.lisp"
 sbclrc="$home_posix/.sbclrc"
 local_projects="$home_posix/quicklisp/local-projects"
-missing=0
+
+sbcl_ok=no
+download_ok=no
+quicklisp_ok=no
 
 if command -v sbcl >/dev/null 2>&1; then
   printf 'ok    sbcl\n'
+  sbcl_ok=yes
 else
   printf 'miss  sbcl\n'
-  missing=1
 fi
 
 if command -v curl >/dev/null 2>&1 || command -v wget >/dev/null 2>&1; then
   printf 'ok    curl/wget\n'
+  download_ok=yes
 else
   printf 'miss  curl/wget\n'
-  missing=1
 fi
 
 if [ -f "$ql_setup" ]; then
   printf 'ok    quicklisp\n'
+  quicklisp_ok=yes
 else
   printf 'miss  quicklisp\n'
-  missing=1
 fi
 
-if [ "$missing" -ne 0 ]; then
-  printf 'setup installing missing requirements\n'
-  installed=0
+if [ "$sbcl_ok" = no ]; then
+  printf 'setup installing sbcl\n'
+  installed=no
   if command -v choco >/dev/null 2>&1 || command -v choco.exe >/dev/null 2>&1; then
     printf 'setup trying choco\n'
-    if choco install sbcl -y; then
-      installed=1
-    else
-      printf 'warn choco install failed\n'
-    fi
+    choco install sbcl -y || printf 'warn choco install failed\n'
+    command -v sbcl >/dev/null 2>&1 && installed=yes
   fi
-  if [ "$installed" -eq 0 ] && command -v scoop >/dev/null 2>&1; then
+  if [ "$installed" = no ] && command -v scoop >/dev/null 2>&1; then
     printf 'setup trying scoop\n'
-    if scoop install sbcl curl; then
-      installed=1
-    else
-      printf 'warn scoop install failed\n'
-    fi
+    scoop install sbcl || printf 'warn scoop install failed\n'
+    command -v sbcl >/dev/null 2>&1 && installed=yes
   fi
-  if [ "$installed" -eq 0 ] && { command -v winget >/dev/null 2>&1 || command -v winget.exe >/dev/null 2>&1; }; then
+  if [ "$installed" = no ] && { command -v winget >/dev/null 2>&1 || command -v winget.exe >/dev/null 2>&1; }; then
     printf 'setup trying winget\n'
-    if winget install --id SBCL.SBCL -e --accept-source-agreements --accept-package-agreements; then
-      installed=1
-    else
-      printf 'warn winget install failed\n'
-    fi
+    winget install --id SBCL.SBCL -e --accept-source-agreements --accept-package-agreements || printf 'warn winget install returned non-zero\n'
+    command -v sbcl >/dev/null 2>&1 && installed=yes
   fi
-  [ "$installed" -eq 1 ] || fail 'no supported package manager could install sbcl; install it manually'
+  [ "$installed" = yes ] || fail 'sbcl missing after install; open a new shell if PATH changed'
+  printf 'ok    sbcl\n'
 fi
 
-command -v sbcl >/dev/null 2>&1 || fail 'sbcl missing after install; open a new shell if PATH changed'
-printf 'ok    sbcl\n'
+if [ "$download_ok" = no ]; then
+  printf 'setup installing curl\n'
+  installed=no
+  if command -v choco >/dev/null 2>&1 || command -v choco.exe >/dev/null 2>&1; then
+    choco install curl -y || printf 'warn choco curl install failed\n'
+    command -v curl >/dev/null 2>&1 && installed=yes
+  fi
+  if [ "$installed" = no ] && command -v scoop >/dev/null 2>&1; then
+    scoop install curl || printf 'warn scoop curl install failed\n'
+    command -v curl >/dev/null 2>&1 && installed=yes
+  fi
+  if [ "$installed" = no ] && { command -v winget >/dev/null 2>&1 || command -v winget.exe >/dev/null 2>&1; }; then
+    winget install --id Curl.Curl -e --accept-source-agreements --accept-package-agreements || printf 'warn winget curl install returned non-zero\n'
+    command -v curl >/dev/null 2>&1 && installed=yes
+  fi
+  command -v curl >/dev/null 2>&1 || command -v wget >/dev/null 2>&1 || fail 'curl/wget missing after install; install it manually'
+  printf 'ok    curl/wget\n'
+fi
 
-if [ ! -f "$ql_setup" ]; then
+if [ "$quicklisp_ok" = no ]; then
   printf 'setup installing quicklisp\n'
   tmp_dir=$(mktemp -d) || fail 'cannot create temporary directory'
   if command -v curl >/dev/null 2>&1; then
@@ -106,7 +117,7 @@ if [ ! -f "$ql_setup" ]; then
   fi
 fi
 
-[ -f "$ql_setup" ] || fail 'quicklisp missing after install'
+[ -f "$ql_setup" ] || fail 'quicklisp missing after install; check USERPROFILE and HOME paths'
 printf 'ok    quicklisp\n'
 
 mkdir -p "$local_projects" || fail 'cannot create quicklisp/local-projects'

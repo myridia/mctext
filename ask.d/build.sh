@@ -34,8 +34,17 @@ else
 fi
 
 command -v sbcl >/dev/null 2>&1 || fail "sbcl missing; run task $setup_task in ask.sh"
-[ -f "$home_posix/quicklisp/setup.lisp" ] || fail "Quicklisp missing; run task $setup_task in ask.sh"
-[ -e "$home_posix/quicklisp/local-projects/mctext" ] || fail "local project missing; run task $setup_task in ask.sh"
+
+ql_setup=
+for candidate in "$home_posix/quicklisp/setup.lisp" "$HOME/quicklisp/setup.lisp"; do
+  [ -f "$candidate" ] || continue
+  ql_setup="$candidate"
+  break
+done
+[ -n "$ql_setup" ] || fail "Quicklisp missing; run task $setup_task in ask.sh (checked $home_posix/quicklisp/setup.lisp)"
+
+ql_root=$(dirname "$ql_setup")
+[ -e "$ql_root/local-projects/mctext" ] || fail "local project missing; run task $setup_task in ask.sh"
 if [ "$windows" = yes ]; then
   [ -f vendor/sdl2/SDL2.dll ] || fail 'SDL2.dll missing; run task 7 in ask.sh'
   export PATH="$ROOT/vendor/sdl2:$PATH"
@@ -46,6 +55,7 @@ printf 'ok    dependencies\n'
 mkdir -p bin dist/mctext
 
 sbcl --non-interactive \
+  --load "$ql_setup" \
   --eval '(defparameter cl-user::*auto-start* nil)' \
   --load main.lisp \
   --eval '(defparameter cl-user::*bundled-font-bytes* (with-open-file (s (cl-dejavu:font-pathname "DejaVuSans.ttf") :element-type (quote (unsigned-byte 8))) (let* ((n (file-length s)) (b (make-array n :element-type (quote (unsigned-byte 8))))) (read-sequence b s) b)))' \
