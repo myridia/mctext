@@ -16,7 +16,16 @@ case "$(uname -s)" in
   *) fail 'task 7 is Windows-only; use task 1 on Linux/macOS/FreeBSD' ;;
 esac
 
-ql_setup="$HOME/quicklisp/setup.lisp"
+if [ -n "${USERPROFILE:-}" ] && command -v cygpath >/dev/null 2>&1; then
+  home_posix=$(cygpath -u "$USERPROFILE") || fail 'cannot determine Windows home directory'
+else
+  home_posix="$HOME"
+fi
+[ -n "$home_posix" ] || fail 'cannot determine Windows home directory'
+
+ql_setup="$home_posix/quicklisp/setup.lisp"
+sbclrc="$home_posix/.sbclrc"
+local_projects="$home_posix/quicklisp/local-projects"
 missing=0
 
 if command -v sbcl >/dev/null 2>&1; then
@@ -86,25 +95,26 @@ if [ ! -f "$ql_setup" ]; then
     --eval '(quicklisp-quickstart:install)' \
     --eval '(sb-ext:exit)' || fail 'quicklisp install failed'
   rm -rf "$tmp_dir"
-  if ! grep -q 'quicklisp/setup.lisp' "$HOME/.sbclrc" 2>/dev/null; then
+  if ! grep -q 'quicklisp/setup.lisp' "$sbclrc" 2>/dev/null; then
     printf '%s\n' \
       ';;; The following lines added by ql:add-to-init-file:' \
       '#-quicklisp' \
       '(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"' \
       '                                       (user-homedir-pathname))))' \
       '  (when (probe-file quicklisp-init)' \
-      '    (load quicklisp-init)))' >> "$HOME/.sbclrc" || fail 'cannot update ~/.sbclrc'
+      '    (load quicklisp-init)))' >> "$sbclrc" || fail 'cannot update ~/.sbclrc'
   fi
 fi
 
 [ -f "$ql_setup" ] || fail 'quicklisp missing after install'
 printf 'ok    quicklisp\n'
 
-local_projects="$HOME/quicklisp/local-projects"
 mkdir -p "$local_projects" || fail 'cannot create quicklisp/local-projects'
-rm -rf "$local_projects/mctext" || fail 'cannot replace existing local project'
 win_link=$(cygpath -w "$local_projects/mctext" 2>/dev/null || printf '%s' "$local_projects/mctext")
 win_root=$(cygpath -w "$ROOT" 2>/dev/null || printf '%s' "$ROOT")
+if [ -e "$local_projects/mctext" ] || [ -L "$local_projects/mctext" ]; then
+  cmd.exe //c rmdir "$win_link" >/dev/null 2>&1 || rm -f "$local_projects/mctext" 2>/dev/null || fail 'cannot replace existing local project'
+fi
 if ! cmd.exe //c mklink /J "$win_link" "$win_root" >/dev/null 2>&1; then
   ln -sfn "$ROOT" "$local_projects/mctext" 2>/dev/null || fail 'cannot register local project; run shell as administrator or enable developer mode'
   [ -L "$local_projects/mctext" ] || fail 'cannot register local project; run shell as administrator or enable developer mode'

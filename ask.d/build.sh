@@ -7,19 +7,43 @@
 set -e
 enter
 
-"$ROOT/ask.d/clean.sh"
-mkdir -p bin dist/mctext
+fail() {
+  printf 'FAIL  %s\n' "$1" >&2
+  exit 1
+}
 
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*)
+    windows=yes
+    setup_task=7
     compression=nil
     application=' :application-type :gui'
     ;;
   *)
+    windows=no
+    setup_task=1
     compression=t
     application=
     ;;
 esac
+
+if [ "$windows" = yes ] && [ -n "${USERPROFILE:-}" ] && command -v cygpath >/dev/null 2>&1; then
+  home_posix=$(cygpath -u "$USERPROFILE") || fail 'cannot determine Windows home directory'
+else
+  home_posix="$HOME"
+fi
+
+command -v sbcl >/dev/null 2>&1 || fail "sbcl missing; run task $setup_task in ask.sh"
+[ -f "$home_posix/quicklisp/setup.lisp" ] || fail "Quicklisp missing; run task $setup_task in ask.sh"
+[ -e "$home_posix/quicklisp/local-projects/mctext" ] || fail "local project missing; run task $setup_task in ask.sh"
+if [ "$windows" = yes ]; then
+  [ -f vendor/sdl2/SDL2.dll ] || fail 'SDL2.dll missing; run task 7 in ask.sh'
+  export PATH="$ROOT/vendor/sdl2:$PATH"
+fi
+printf 'ok    dependencies\n'
+
+"$ROOT/ask.d/clean.sh"
+mkdir -p bin dist/mctext
 
 sbcl --non-interactive \
   --eval '(defparameter cl-user::*auto-start* nil)' \
