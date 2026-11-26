@@ -35,7 +35,7 @@ jobs:
       - name: Compile
         run: |
           echo "Compile"
-          sh ask.d/setup-unix.sh
+          sh ask.d/setup-macos.sh
           sh ask.d/build.sh
 
       - name: Rename

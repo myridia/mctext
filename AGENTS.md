@@ -30,13 +30,14 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 - `sdl2.sh` — pins McCLIM 1.0.0 for SDL2 builds and downloads `SDL2.dll` on Windows
 - `ask.sh` — task runner menu
 - `ask.d/lib.sh` — shared task helpers
-- `ask.d/setup-unix.sh` — task 1: Linux/macOS/FreeBSD setup (SBCL/Quicklisp and local project)
+- `ask.d/setup-linux.sh` — task 1: Linux/FreeBSD setup (SBCL/Quicklisp and local project)
 - `ask.d/build.sh` — task 2: embed font and save a self-contained executable
 - `ask.d/run.sh` — task 3: run `sbcl --script main.lisp`
 - `ask.d/dmg.sh` — task 4: build a macOS `.app` and DMG
 - `ask.d/clean.sh` — task 5: remove build outputs
 - `ask.d/dev.sh` — task 6: start the GUI and a development REPL with automatic reload on source changes
 - `ask.d/setup-windows.sh` — task 7: Windows setup (SBCL/Quicklisp, SDL2.dll and local project)
+- `ask.d/setup-macos.sh` — task 8: macOS setup (SBCL/Quicklisp and local project)
 - `README.md` — project title, logo and commands
 - `mctext.svg` — README logo
 - `pages/public/` — GitHub Pages site
@@ -75,7 +76,7 @@ The user builds and runs all Lisp code. Do not compile or run Lisp code in the a
 - The log exists only in memory for one GUI session; only clicked entries are written to the JSON store. Wayland needs a compositor/portal helper for reliable background watching.
 - Store path is `~/.local/share/mctext/mctext.json` on POSIX and `%APPDATA%\McText\mctext.json` on Windows.
 - `MCTEXT_BACKEND` overrides backend; `MCCLIM_BACKEND` is accepted as a fallback.
-- CI workflows register the checkout in `~/quicklisp/local-projects/mctext` before `ql:quickload :mctext`; the macOS workflows do this through `ask.d/setup-unix.sh`.
+- CI workflows register the checkout in `~/quicklisp/local-projects/mctext` before `ql:quickload :mctext`; the macOS workflows do this through `ask.d/setup-macos.sh`.
 
 ## Conventions
 - Keep the README logo as its first line.
