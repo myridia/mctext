@@ -5,11 +5,12 @@
   (cond ((find-package "QL") nil)
         ((probe-file setup) (load setup))
         (t (error "Quicklisp not found. Run task ~A in ask.sh."
-                  (if (or (member :win32 *features*)
-                          (member :mingw32 *features*)
-                          (member :cygwin *features*))
-                      7
-                      1)))))
+                  (cond ((or (member :win32 *features*)
+                             (member :mingw32 *features*)
+                             (member :cygwin *features*))
+                         7)
+                        ((member :darwin *features*) 8)
+                        (t 1))))))
 
 (when (fboundp 'ql:register-local-projects)
   (ql:register-local-projects))
@@ -26,7 +27,8 @@
           ((or (member :win32 *features*)
                (member :mingw32 *features*)
                (member :cygwin *features*)) :sdl2)
-          (t :clx))))
+          ((member :darwin *features*) :sdl2)
+           (t :clx))))
 
 (ql:quickload :mctext)
 

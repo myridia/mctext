@@ -12,12 +12,20 @@ fail() {
   exit 1
 }
 
+bundle_sdl2=no
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*)
     windows=yes
     setup_task=7
     compression=nil
     application=' :application-type :gui'
+    ;;
+  Darwin*)
+    windows=no
+    setup_task=8
+    compression=t
+    application=
+    bundle_sdl2=yes
     ;;
   *)
     windows=no
@@ -125,5 +133,20 @@ cp -f "$exe" "dist/mctext/${exe##*/}"
 if [ -f vendor/sdl2/SDL2.dll ]; then
   rm -f dist/mctext/SDL2.dll
   cp -f vendor/sdl2/SDL2.dll dist/mctext/SDL2.dll
+fi
+if [ "$bundle_sdl2" = yes ]; then
+  sdl2_prefix=$(brew --prefix sdl2 2>/dev/null || true)
+  for sdl2_lib in "$sdl2_prefix/lib/libSDL2-2.0.0.dylib" /opt/homebrew/opt/sdl2/lib/libSDL2-2.0.0.dylib /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib; do
+    [ -f "$sdl2_lib" ] || continue
+    sdl2_copy="dist/mctext/${sdl2_lib##*/}"
+    rm -f "$sdl2_copy"
+    cp -f "$sdl2_lib" "$sdl2_copy"
+    chmod 755 "$sdl2_copy"
+    if command -v codesign >/dev/null 2>&1; then
+      codesign --remove-signature "$sdl2_copy" >/dev/null 2>&1 || true
+      codesign --force --sign - "$sdl2_copy" >/dev/null 2>&1 || true
+    fi
+    break
+  done
 fi
 printf "ok    dist/mctext\n"

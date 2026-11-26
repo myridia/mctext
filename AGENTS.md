@@ -8,7 +8,7 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 ## Stack
 - Common Lisp (SBCL)
 - McCLIM via Quicklisp
-- CLX on Linux/macOS/FreeBSD, SDL2 on Windows by default
+- CLX on Linux/FreeBSD, SDL2 on macOS and Windows by default (no X server needed on macOS)
 - `cl-json` for the local document store
 - `bordeaux-threads` for the clipboard watcher
 - `anathema` and `anathema-doom` from Quicklisp for the dark, light and high-contrast themes
@@ -37,7 +37,7 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 - `ask.d/clean.sh` — task 5: remove build outputs
 - `ask.d/dev.sh` — task 6: start the GUI and a development REPL with automatic reload on source changes
 - `ask.d/setup-windows.sh` — task 7: Windows setup (SBCL/Quicklisp, SDL2.dll and local project)
-- `ask.d/setup-macos.sh` — task 8: macOS setup (SBCL/Quicklisp and local project)
+- `ask.d/setup-macos.sh` — task 8: macOS setup (SBCL/Quicklisp, SDL2 and local project)
 - `README.md` — project title, logo and commands
 - `mctext.svg` — README logo
 - `pages/public/` — GitHub Pages site
