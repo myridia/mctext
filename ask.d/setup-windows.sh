@@ -118,19 +118,32 @@ if [ "$quicklisp_ok" = no ]; then
 fi
 
 [ -f "$ql_setup" ] || fail 'quicklisp missing after install; check USERPROFILE and HOME paths'
-printf 'ok    quicklisp\n'
+if [ "$quicklisp_ok" = no ]; then
+  printf 'ok    quicklisp\n'
+fi
 
 mkdir -p "$local_projects" || fail 'cannot create quicklisp/local-projects'
 win_link=$(cygpath -w "$local_projects/mctext" 2>/dev/null || printf '%s' "$local_projects/mctext")
 win_root=$(cygpath -w "$ROOT" 2>/dev/null || printf '%s' "$ROOT")
+project_ok=no
 if [ -e "$local_projects/mctext" ] || [ -L "$local_projects/mctext" ]; then
-  cmd.exe //c rmdir "$win_link" >/dev/null 2>&1 || rm -f "$local_projects/mctext" 2>/dev/null || fail 'cannot replace existing local project'
+  if [ -f "$local_projects/mctext/mctext.asd" ] && cmp -s "$local_projects/mctext/mctext.asd" "$ROOT/mctext.asd"; then
+    project_ok=yes
+    printf 'ok    existing local project mctext\n'
+  else
+    cmd.exe //c rmdir "$win_link" >/dev/null 2>&1 || rmdir "$local_projects/mctext" 2>/dev/null || rm -f "$local_projects/mctext" 2>/dev/null
+    if [ -e "$local_projects/mctext" ] || [ -L "$local_projects/mctext" ]; then
+      fail "invalid local project at $win_link; remove it manually and rerun task 7"
+    fi
+  fi
 fi
-if ! cmd.exe //c mklink /J "$win_link" "$win_root" >/dev/null 2>&1; then
-  ln -sfn "$ROOT" "$local_projects/mctext" 2>/dev/null || fail 'cannot register local project; run shell as administrator or enable developer mode'
-  [ -L "$local_projects/mctext" ] || fail 'cannot register local project; run shell as administrator or enable developer mode'
+if [ "$project_ok" = no ]; then
+  if ! cmd.exe //c mklink /J "$win_link" "$win_root" >/dev/null 2>&1; then
+    ln -sfn "$ROOT" "$local_projects/mctext" 2>/dev/null || fail 'cannot register local project; run shell as administrator or enable developer mode'
+    [ -L "$local_projects/mctext" ] || fail 'cannot register local project; run shell as administrator or enable developer mode'
+  fi
+  printf 'ok    local project mctext\n'
 fi
-printf 'ok    local project mctext\n'
 
 "$ROOT/sdl2.sh" || fail 'sdl2.sh failed'
 export PATH="$ROOT/vendor/sdl2:$PATH"
