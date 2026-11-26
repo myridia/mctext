@@ -45,5 +45,5 @@ jobs:
   windows:      { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/windows.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
   macos:        { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/macos.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
   macos_intel:  { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/macos_intel.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
-  freebsd:      { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/freebsd.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
+  #freebsd:      { if: "github.repository_owner == 'myridia'", needs: tag, uses: ./.github/workflows/freebsd.yml, secrets: inherit, with: { tag: "${{ needs.tag.outputs.tag }}" } }
   msix:        { if: "github.repository_owner == 'myridia'", uses: ./.github/workflows/msix.yml, secrets: inherit }
