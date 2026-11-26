@@ -30,12 +30,13 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 - `sdl2.sh` — pins McCLIM 1.0.0 for SDL2 builds and downloads `SDL2.dll` on Windows
 - `ask.sh` — task runner menu
 - `ask.d/lib.sh` — shared task helpers
-- `ask.d/setup.sh` — task 1: install SBCL/Quicklisp and register this repo in `~/quicklisp/local-projects/mctext`
+- `ask.d/setup-unix.sh` — task 1: Linux/macOS/FreeBSD setup (SBCL/Quicklisp and local project)
 - `ask.d/build.sh` — task 2: embed font and save a self-contained executable
 - `ask.d/run.sh` — task 3: run `sbcl --script main.lisp`
 - `ask.d/dmg.sh` — task 4: build a macOS `.app` and DMG
 - `ask.d/clean.sh` — task 5: remove build outputs
 - `ask.d/dev.sh` — task 6: start the GUI and a development REPL with automatic reload on source changes
+- `ask.d/setup-windows.sh` — task 7: Windows setup (SBCL/Quicklisp, SDL2.dll and local project)
 - `README.md` — project title, logo and commands
 - `mctext.svg` — README logo
 - `pages/public/` — GitHub Pages site

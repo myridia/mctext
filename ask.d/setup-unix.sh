@@ -1,7 +1,7 @@
 #!/bin/sh
 # id: 1
 # group: SETUP
-# desc: Setup - check and install requirements
+# desc: Setup - Linux/macOS requirements
 . "$(dirname "$0")/lib.sh"
 
 enter
@@ -69,19 +69,15 @@ if [ "$missing" -ne 0 ]; then
       fi
       "$brew_bin" install sbcl curl || fail 'brew install failed'
       ;;
-    MINGW*|MSYS*|CYGWIN*)
-      if command -v choco >/dev/null 2>&1 || command -v choco.exe >/dev/null 2>&1; then
-        choco install sbcl -y || fail 'choco install failed'
-      elif command -v scoop >/dev/null 2>&1; then
-        scoop install sbcl curl || fail 'scoop install failed'
-      elif command -v winget >/dev/null 2>&1 || command -v winget.exe >/dev/null 2>&1; then
-        winget install --id SteelBankCommonLisp.SBCL -e --accept-source-agreements --accept-package-agreements || fail 'winget install failed'
+    FreeBSD*)
+      if command -v pkg >/dev/null 2>&1; then
+        pkg install -y sbcl curl || fail 'pkg install failed'
       else
         fail 'no supported package manager; install sbcl manually'
       fi
       ;;
     *)
-      fail "unsupported platform: $(uname -s)"
+      fail "unsupported platform: $(uname -s); use task 7 on Windows"
       ;;
   esac
 fi
@@ -125,10 +121,6 @@ ln -sfn "$ROOT" "$local_projects/mctext" || fail 'cannot register local project'
 printf 'ok    local project mctext\n'
 
 "$ROOT/sdl2.sh" || fail 'sdl2.sh failed'
-
-case "$(uname -s)" in
-  MINGW*|MSYS*|CYGWIN*) export PATH="$ROOT/vendor/sdl2:$PATH" ;;
-esac
 
 printf 'setup verifying quickload\n'
 sbcl --non-interactive \
