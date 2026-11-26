@@ -75,6 +75,7 @@ The user builds and runs all Lisp code. Do not compile or run Lisp code in the a
 - The log exists only in memory for one GUI session; only clicked entries are written to the JSON store. Wayland needs a compositor/portal helper for reliable background watching.
 - Store path is `~/.local/share/mctext/mctext.json` on POSIX and `%APPDATA%\McText\mctext.json` on Windows.
 - `MCTEXT_BACKEND` overrides backend; `MCCLIM_BACKEND` is accepted as a fallback.
+- CI workflows register the checkout in `~/quicklisp/local-projects/mctext` before `ql:quickload :mctext`; the macOS workflows do this through `ask.d/setup-unix.sh`.
 
 ## Conventions
 - Keep the README logo as its first line.
