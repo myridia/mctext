@@ -42,15 +42,32 @@ fi
 
 if [ "$missing" -ne 0 ]; then
   printf 'setup installing missing requirements\n'
+  installed=0
   if command -v choco >/dev/null 2>&1 || command -v choco.exe >/dev/null 2>&1; then
-    choco install sbcl -y || fail 'choco install failed'
-  elif command -v scoop >/dev/null 2>&1; then
-    scoop install sbcl curl || fail 'scoop install failed'
-  elif command -v winget >/dev/null 2>&1 || command -v winget.exe >/dev/null 2>&1; then
-    winget install --id SteelBankCommonLisp.SBCL -e --accept-source-agreements --accept-package-agreements || fail 'winget install failed'
-  else
-    fail 'no supported package manager; install sbcl manually'
+    printf 'setup trying choco\n'
+    if choco install sbcl -y; then
+      installed=1
+    else
+      printf 'warn choco install failed\n'
+    fi
   fi
+  if [ "$installed" -eq 0 ] && command -v scoop >/dev/null 2>&1; then
+    printf 'setup trying scoop\n'
+    if scoop install sbcl curl; then
+      installed=1
+    else
+      printf 'warn scoop install failed\n'
+    fi
+  fi
+  if [ "$installed" -eq 0 ] && { command -v winget >/dev/null 2>&1 || command -v winget.exe >/dev/null 2>&1; }; then
+    printf 'setup trying winget\n'
+    if winget install --id SBCL.SBCL -e --accept-source-agreements --accept-package-agreements; then
+      installed=1
+    else
+      printf 'warn winget install failed\n'
+    fi
+  fi
+  [ "$installed" -eq 1 ] || fail 'no supported package manager could install sbcl; install it manually'
 fi
 
 command -v sbcl >/dev/null 2>&1 || fail 'sbcl missing after install; open a new shell if PATH changed'
