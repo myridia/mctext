@@ -2,9 +2,14 @@
 (defvar cl-user::*bundled-font-bytes* nil)
 
 (let ((setup (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname))))
-  (if (probe-file setup)
-      (load setup)
-      (error "Quicklisp not found. Run task 1 in ask.sh.")))
+  (cond ((find-package "QL") nil)
+        ((probe-file setup) (load setup))
+        (t (error "Quicklisp not found. Run task ~A in ask.sh."
+                  (if (or (member :win32 *features*)
+                          (member :mingw32 *features*)
+                          (member :cygwin *features*))
+                      7
+                      1)))))
 
 (when (fboundp 'ql:register-local-projects)
   (ql:register-local-projects))

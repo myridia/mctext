@@ -18,6 +18,10 @@ Or use the task runner:
 ./ask.sh
 ```
 
+## Setup
+
+Run task 1 in `./ask.sh` on Linux, macOS or FreeBSD to install SBCL and Quicklisp and register this repo as a local project. On Windows, run task 7 instead; it also downloads `SDL2.dll` and puts it on `PATH`.
+
 ## Interactive development
 
 Run task 6 in `./ask.sh` to start a REPL with the GUI already open. A source watcher reloads `src/*.lisp` and `mctext.asd` automatically when a file changes. The McCLIM frames use `:reinitialize-frames t`, so a reload of `src/gui.lisp` rebuilds panes and layouts in the open window.
