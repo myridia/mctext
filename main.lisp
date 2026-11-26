@@ -1,0 +1,62 @@
+(defvar cl-user::*auto-start* t)
+(defvar cl-user::*bundled-font-bytes* nil)
+
+(let ((setup (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname))))
+  (if (probe-file setup)
+      (load setup)
+      (error "Quicklisp not found. Run task 1 in ask.sh.")))
+
+(when (fboundp 'ql:register-local-projects)
+  (ql:register-local-projects))
+
+(defvar cl-user::*backend*
+  (let ((requested (or (sb-ext:posix-getenv "MCTEXT_BACKEND")
+                       (sb-ext:posix-getenv "MCCLIM_BACKEND"))))
+    (cond ((and requested (plusp (length requested))
+                (string-equal requested "sdl2")) :sdl2)
+          ((and requested (plusp (length requested))
+                (string-equal requested "clx")) :clx)
+          ((and requested (plusp (length requested)))
+           (error "Unknown backend ~s (use sdl2 or clx)" requested))
+          ((or (member :win32 *features*)
+               (member :mingw32 *features*)
+               (member :cygwin *features*)) :sdl2)
+          (t :clx))))
+
+(ql:quickload :mctext)
+
+(mctext:activate-theme)
+
+(when (eq cl-user::*backend* :sdl2)
+  (ql:quickload :mcclim-sdl2)
+  (load (merge-pathnames "sdl2-runtime.lisp"
+                         (or *load-truename* *default-pathname-defaults*)))
+  (setf clim:*default-server-path* '(:sdl2-soft)))
+
+(in-package :clim-user)
+
+(defun use-bundled-font ()
+  (when cl-user::*bundled-font-bytes*
+    (let* ((dir (merge-pathnames ".cache/mctext/" (user-homedir-pathname)))
+           (font (merge-pathnames "DejaVuSans.ttf" dir)))
+      (ensure-directories-exist dir)
+      (with-open-file (stream font :direction :output
+                                   :if-exists :supersede
+                                   :if-does-not-exist :create
+                                   :element-type '(unsigned-byte 8))
+        (write-sequence cl-user::*bundled-font-bytes* stream))
+      (setf mcclim-truetype::*truetype-font-path* dir
+            mcclim-truetype::*families/faces*
+            (loop for entry in mcclim-truetype::*families/faces*
+                  collect (cons (car entry) font))))))
+
+(defun main ()
+  (when (eq cl-user::*backend* :sdl2)
+    (funcall (symbol-function (intern "RESET-SDL2-USER-EVENT-ID" "CL-USER"))))
+  (use-bundled-font)
+  (mctext:main :args (uiop:command-line-arguments)))
+
+(export 'main)
+
+(when cl-user::*auto-start*
+  (main))

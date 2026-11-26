@@ -1,0 +1,98 @@
+name: Debian
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (leave empty to skip release)'
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Release tag from caller (leave empty to use pushed tag)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+  packages: none
+
+jobs:
+  Build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y sbcl curl debhelper fakeroot build-essential tree
+          curl -fsSL https://beta.quicklisp.org/quicklisp.lisp -o /tmp/quicklisp.lisp
+          sbcl --version
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile
+        run: |
+          echo "Compile"
+          rm -rf bin dist/mctext && mkdir -p bin dist/mctext
+          sbcl --non-interactive \
+            --load /tmp/quicklisp.lisp \
+            --eval '(quicklisp-quickstart:install)' \
+            --eval '(sb-ext:exit)'
+          sbcl --non-interactive \
+            --eval '(defparameter cl-user::*auto-start* nil)' \
+            --load main.lisp \
+            --eval '(defparameter cl-user::*bundled-font-bytes* (with-open-file (s (cl-dejavu:font-pathname "DejaVuSans.ttf") :element-type (quote (unsigned-byte 8))) (let* ((n (file-length s)) (b (make-array n :element-type (quote (unsigned-byte 8))))) (read-sequence b s) b)))' \
+            --eval '(sb-ext:save-lisp-and-die "bin/mctext" :toplevel (function clim-user:main) :executable t :compression t)'
+          exe=bin/mctext; [ -e "$exe.exe" ] && exe="$exe.exe"; cp "$exe" "dist/mctext/${exe##*/}"
+
+      - name: Package
+        run: |
+          tree 
+          du * -sh 
+          cp dist/mctext/mctext make_deb/src/mctext
+          ls -l make_deb/src/mctext
+          cd make_deb/src
+          dpkg-buildpackage -us -uc -b
+          cd ../../
+          deb=make_deb/mctext_0.1.0-1_amd64.deb
+          dpkg-deb -c "$deb"
+          dpkg-deb -x "$deb" /tmp/mctext-deb-check
+          ls -lh /tmp/mctext-deb-check/usr/bin/mctext
+          size=$(stat -c%s /tmp/mctext-deb-check/usr/bin/mctext)
+          if [ "$size" -lt 10000000 ]; then
+            echo "ERROR: packaged mctext is only $size bytes (SBCL core was stripped)"
+            exit 1
+          fi
+          tree make_deb
+
+      - name: Resolve release tag
+        id: release
+        shell: bash
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          tag="$INPUT_TAG"
+          if [ -z "$tag" ] && [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            tag="${GITHUB_REF#refs/tags/}"
+          fi
+          if [ -z "$tag" ]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "No release tag (not a tag push and no tag input); skipping release"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Release
+        if: steps.release.outputs.publish == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: 'make_deb/mctext_0.1.0-1_amd64.deb'
+          tag: ${{ steps.release.outputs.tag }}
+          overwrite: true
+          file_glob: true

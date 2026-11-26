@@ -1,0 +1,17 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+
+override_dh_auto_build:
+
+override_dh_auto_test:
+
+override_dh_auto_install:
+	install -D -m 755 mctext debian/mctext/usr/bin/mctext
+
+# SBCL's core is embedded in the executable; `strip` removes it (23 MB -> 450 KB)
+# and leaves a package that is tiny and will not run.
+override_dh_strip:
