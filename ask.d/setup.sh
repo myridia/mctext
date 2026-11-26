@@ -6,49 +6,55 @@
 
 enter
 
-missing=0
+fail() {
+  printf 'FAIL  %s\n' "$1" >&2
+  exit 1
+}
+
 ql_setup="$HOME/quicklisp/setup.lisp"
+missing=0
 
 if command -v sbcl >/dev/null 2>&1; then
-  printf "ok    sbcl\n"
+  printf 'ok    sbcl\n'
 else
-  printf "FAIL  sbcl missing\n"
+  printf 'miss  sbcl\n'
   missing=1
 fi
 
 if command -v curl >/dev/null 2>&1 || command -v wget >/dev/null 2>&1; then
-  printf "ok    curl/wget\n"
+  printf 'ok    curl/wget\n'
 else
-  printf "FAIL  curl/wget missing\n"
+  printf 'miss  curl/wget\n'
   missing=1
 fi
 
 if [ -f "$ql_setup" ]; then
-  printf "ok    quicklisp\n"
+  printf 'ok    quicklisp\n'
 else
-  printf "FAIL  quicklisp missing\n"
+  printf 'miss  quicklisp\n'
   missing=1
 fi
 
 if [ "$missing" -ne 0 ]; then
+  printf 'setup installing missing requirements\n'
   case "$(uname -s)" in
     Linux*)
       if command -v apt-get >/dev/null 2>&1; then
         if [ "$(id -u)" -eq 0 ]; then
-          apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y sbcl curl
+          apt-get update || fail 'apt-get update failed'
+          DEBIAN_FRONTEND=noninteractive apt-get install -y sbcl curl || fail 'apt-get install failed'
         elif command -v sudo >/dev/null 2>&1; then
-          sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y sbcl curl
+          sudo apt-get update || fail 'apt-get update failed'
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y sbcl curl || fail 'apt-get install failed'
         else
-          printf "FAIL cannot install sbcl: sudo not found\n"
-          exit 1
+          fail 'cannot install sbcl: run as root or install sudo'
         fi
       elif command -v dnf >/dev/null 2>&1; then
-        dnf install -y sbcl curl
+        dnf install -y sbcl curl || fail 'dnf install failed'
       elif command -v pacman >/dev/null 2>&1; then
-        pacman -S --noconfirm sbcl curl
+        pacman -S --noconfirm sbcl curl || fail 'pacman install failed'
       else
-        printf "FAIL no supported package manager; install sbcl manually\n"
-        exit 1
+        fail 'no supported package manager; install sbcl manually'
       fi
       ;;
     Darwin*)
@@ -59,41 +65,42 @@ if [ "$missing" -ne 0 ]; then
       elif command -v brew >/dev/null 2>&1; then
         brew_bin=brew
       else
-        printf "FAIL brew not found; install Homebrew from https://brew.sh\n"
-        exit 1
+        fail 'brew not found; install Homebrew from https://brew.sh'
       fi
-      "$brew_bin" install sbcl curl
+      "$brew_bin" install sbcl curl || fail 'brew install failed'
       ;;
     MINGW*|MSYS*|CYGWIN*)
       if command -v choco >/dev/null 2>&1 || command -v choco.exe >/dev/null 2>&1; then
-        choco install sbcl -y
+        choco install sbcl -y || fail 'choco install failed'
       elif command -v scoop >/dev/null 2>&1; then
-        scoop install sbcl curl
+        scoop install sbcl curl || fail 'scoop install failed'
       elif command -v winget >/dev/null 2>&1 || command -v winget.exe >/dev/null 2>&1; then
-        winget install --id SteelBankCommonLisp.SBCL -e --accept-source-agreements --accept-package-agreements
+        winget install --id SteelBankCommonLisp.SBCL -e --accept-source-agreements --accept-package-agreements || fail 'winget install failed'
       else
-        printf "FAIL no supported package manager; install sbcl manually\n"
-        exit 1
+        fail 'no supported package manager; install sbcl manually'
       fi
       ;;
     *)
-      printf "FAIL unsupported platform: %s\n" "$(uname -s)"
-      exit 1
+      fail "unsupported platform: $(uname -s)"
       ;;
   esac
 fi
 
+command -v sbcl >/dev/null 2>&1 || fail 'sbcl missing after install; open a new shell if PATH changed'
+printf 'ok    sbcl\n'
+
 if [ ! -f "$ql_setup" ]; then
-  tmp_dir=$(mktemp -d)
+  printf 'setup installing quicklisp\n'
+  tmp_dir=$(mktemp -d) || fail 'cannot create temporary directory'
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL https://beta.quicklisp.org/quicklisp.lisp -o "$tmp_dir/quicklisp.lisp"
+    curl -fsSL https://beta.quicklisp.org/quicklisp.lisp -o "$tmp_dir/quicklisp.lisp" || fail 'quicklisp download failed'
   else
-    wget -q https://beta.quicklisp.org/quicklisp.lisp -O "$tmp_dir/quicklisp.lisp"
+    wget -q https://beta.quicklisp.org/quicklisp.lisp -O "$tmp_dir/quicklisp.lisp" || fail 'quicklisp download failed'
   fi
   sbcl --non-interactive \
     --load "$tmp_dir/quicklisp.lisp" \
     --eval '(quicklisp-quickstart:install)' \
-    --eval '(sb-ext:exit)'
+    --eval '(sb-ext:exit)' || fail 'quicklisp install failed'
   rm -rf "$tmp_dir"
   if ! grep -q 'quicklisp/setup.lisp' "$HOME/.sbclrc" 2>/dev/null; then
     printf '%s\n' \
@@ -102,43 +109,32 @@ if [ ! -f "$ql_setup" ]; then
       '(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"' \
       '                                       (user-homedir-pathname))))' \
       '  (when (probe-file quicklisp-init)' \
-      '    (load quicklisp-init)))' >> "$HOME/.sbclrc"
+      '    (load quicklisp-init)))' >> "$HOME/.sbclrc" || fail 'cannot update ~/.sbclrc'
   fi
 fi
 
-local_projects="$HOME/quicklisp/local-projects"
-mkdir -p "$local_projects"
-if [ -L "$local_projects/mctext" ]; then
-  ln -sfn "$ROOT" "$local_projects/mctext"
-elif [ ! -e "$local_projects/mctext" ]; then
-  ln -s "$ROOT" "$local_projects/mctext"
-fi
-printf "ok    local project mctext\n"
+[ -f "$ql_setup" ] || fail 'quicklisp missing after install'
+printf 'ok    quicklisp\n'
 
-"$ROOT/sdl2.sh"
+local_projects="$HOME/quicklisp/local-projects"
+mkdir -p "$local_projects" || fail 'cannot create quicklisp/local-projects'
+if [ -e "$local_projects/mctext" ] && [ ! -L "$local_projects/mctext" ]; then
+  fail "$local_projects/mctext exists and is not a symlink"
+fi
+ln -sfn "$ROOT" "$local_projects/mctext" || fail 'cannot register local project'
+printf 'ok    local project mctext\n'
+
+"$ROOT/sdl2.sh" || fail 'sdl2.sh failed'
 
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*) export PATH="$ROOT/vendor/sdl2:$PATH" ;;
 esac
 
+printf 'setup verifying quickload\n'
 sbcl --non-interactive \
-  --load "$HOME/quicklisp/setup.lisp" \
+  --load "$ql_setup" \
   --eval '(ql:register-local-projects)' \
   --eval '(ql:quickload :mctext)' \
-  --eval '(sb-ext:exit)'
-
-for cmd in sbcl; do
-  if command -v "$cmd" >/dev/null 2>&1; then
-    printf "ok    %s\n" "$cmd"
-  else
-    printf "FAIL  %s missing after install; open a new shell if PATH changed\n" "$cmd"
-    exit 1
-  fi
-done
-
-if [ -f "$HOME/quicklisp/setup.lisp" ]; then
-  printf "ok    quicklisp\n"
-else
-  printf "FAIL  quicklisp missing after install\n"
-  exit 1
-fi
+  --eval '(sb-ext:exit)' || fail 'quickload :mctext failed'
+printf 'ok    quickload\n'
+printf 'ok    setup complete\n'
