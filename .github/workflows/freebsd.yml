@@ -38,6 +38,8 @@ jobs:
             echo "Compile"
             curl -fsSL https://beta.quicklisp.org/quicklisp.lisp -o /tmp/quicklisp.lisp
             rm -rf bin dist/mctext && mkdir -p bin dist/mctext
+            mkdir -p "$HOME/quicklisp/local-projects"
+            ln -sfn "$PWD" "$HOME/quicklisp/local-projects/mctext"
             sbcl --non-interactive \
               --load /tmp/quicklisp.lisp \
               --eval '(quicklisp-quickstart:install)' \
