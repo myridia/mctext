@@ -54,9 +54,9 @@ exec "$dir/mctext" "$@"
 EOF
 exe_dir=${exe%/*}
 [ "$exe_dir" = "$exe" ] && exe_dir=.
-for zstd in "$exe_dir"/libzstd*.dylib; do
-  [ -f "$zstd" ] || continue
-  ditto "$zstd" "$app/Contents/MacOS/${zstd##*/}"
+for dylib in "$exe_dir"/libzstd*.dylib "$exe_dir"/libSDL2*.dylib; do
+  [ -f "$dylib" ] || continue
+  ditto "$dylib" "$app/Contents/MacOS/${dylib##*/}"
 done
 printf 'APPL????' > "$app/Contents/PkgInfo"
 cat > "$app/Contents/Info.plist" <<EOF

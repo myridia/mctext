@@ -20,7 +20,7 @@ Or use the task runner:
 
 ## Setup
 
-Run task 1 in `./ask.sh` on Linux, macOS or FreeBSD to install SBCL and Quicklisp and register this repo as a local project. On Windows, run task 7 instead; it also downloads `SDL2.dll` and puts it on `PATH`.
+Run task 1 in `./ask.sh` on Linux or FreeBSD, task 8 on macOS, or task 7 on Windows. Each installs SBCL and Quicklisp and registers this repo as a local project; the Windows task also downloads `SDL2.dll`, and the macOS task installs SDL2. macOS uses the SDL2 backend by default, so no X server is needed.
 
 ## Interactive development
 

@@ -13,7 +13,7 @@ fail() {
 
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*) ;;
-  *) fail 'task 7 is Windows-only; use task 1 on Linux/macOS/FreeBSD' ;;
+  *) fail 'task 7 is Windows-only; use task 1 on Linux/FreeBSD or task 8 on macOS' ;;
 esac
 
 if [ -n "${USERPROFILE:-}" ] && command -v cygpath >/dev/null 2>&1; then
