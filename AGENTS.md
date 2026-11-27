@@ -27,7 +27,7 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 - `src/gui.lisp` — main frame and `clipboard-log-frame`, panes, presentation types, commands and translators
 - `src/cli.lisp` — `--list`, `--copy`, `--help` and no-window dispatch
 - `sdl2-runtime.lisp` — SDL2 runtime fix; loaded only for SDL2 builds
-- `sdl2.sh` — pins McCLIM 1.0.0 for SDL2 builds and downloads `SDL2.dll` on Windows
+- `sdl2.sh` — pins McCLIM 1.0.0 for SDL2 builds, registers a pinned `cl-sdl2` local project with the Apple Silicon spec on macOS ARM, and downloads `SDL2.dll` on Windows
 - `ask.sh` — task runner menu
 - `ask.d/lib.sh` — shared task helpers
 - `ask.d/setup-linux.sh` — task 1: Linux/FreeBSD setup (SBCL/Quicklisp and local project)

@@ -41,6 +41,27 @@ else
   printf "ok    mcclim 1.0.0\n"
 fi
 
+if [ "$PLATFORM" = Darwin ]; then
+  case "$(uname -m)" in
+    arm64|aarch64)
+      sdl2_dir="$HOME_POSIX/quicklisp/local-projects/cl-sdl2"
+      spec="$sdl2_dir/src/spec/SDL2.aarch64-apple-darwin9.spec"
+      if [ -f "$spec" ]; then
+        printf "ok    cl-sdl2 aarch64 spec\n"
+      else
+        tmp_dir=$(mktemp -d)
+        fetch "https://github.com/lispgames/cl-sdl2/archive/f107198b1da0c3c1d749d3daa22bc85dd816e79b.tar.gz" "$tmp_dir/cl-sdl2.tar.gz"
+        rm -rf "$sdl2_dir"
+        mkdir -p "$sdl2_dir"
+        tar -xzf "$tmp_dir/cl-sdl2.tar.gz" --strip-components=1 -C "$sdl2_dir"
+        rm -rf "$tmp_dir"
+        [ -f "$spec" ] || { printf "FAIL  cl-sdl2 aarch64 spec missing\n" >&2; exit 1; }
+        printf "ok    cl-sdl2 aarch64 spec\n"
+      fi
+      ;;
+  esac
+fi
+
 if [ "$WINDOWS" = no ]; then
   printf "ok    SDL2.dll skipped (use the host libsdl2)\n"
   exit 0
