@@ -83,6 +83,7 @@ The user builds and runs all Lisp code. Do not compile or run Lisp code in the a
 - The log exists only in memory for one GUI session; only clicked entries are written to the JSON store. Wayland needs a compositor/portal helper for reliable background watching.
 - Store path is `~/.local/share/mctext/mctext.json` on POSIX and `%APPDATA%\McText\mctext.json` on Windows.
 - On macOS SDL2 the SDL loop stays on the process main thread while the McText frame runs in a worker thread; without both halves SDL initializes but no native window appears. When the frame exits, `quit-sdl2-port` destroys the SDL port and calls `sdl2:quit` to close cl-sdl2's main-thread channel; otherwise the process stays alive with no window.
+- The macOS builder copies the Homebrew SDL dylibs directly and rewrites them to `@rpath`; SDL is loaded at runtime, so it never appears in the saved executable's `otool -L` output.
 - `MCTEXT_BACKEND` overrides backend; `MCCLIM_BACKEND` is accepted as a fallback.
 - CI workflows register the checkout in `~/quicklisp/local-projects/mctext` before `ql:quickload :mctext`; the macOS workflows do this through `ask.d/setup-macos.sh`, install SDL2/SDL3, set `MCTEXT_BACKEND=sdl2`, bundle `libSDL*.dylib` with `libzstd*.dylib`, and use the macOS main-thread shim.
 

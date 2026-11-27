@@ -18,7 +18,7 @@ esac
 exe=${MCTEXT_DMG_SOURCE:-dist/mctext/mctext}
 [ -e "$exe.exe" ] && exe="$exe.exe"
 if [ -z "${MCTEXT_DMG_SOURCE:-}" ]; then
-  sh "$ROOT/ask.d/build.sh"
+  sh "$ROOT/ask.d/build-mac.sh"
 fi
 if [ ! -x "$exe" ]; then
   printf "FAIL  build first with task 2\n"
