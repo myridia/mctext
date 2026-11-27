@@ -28,16 +28,23 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 - `src/cli.lisp` — `--list`, `--copy`, `--help` and no-window dispatch
 - `sdl2-runtime.lisp` — SDL2 runtime fix; loaded only for SDL2 builds, resets the user-event id, centers windows, moves McCLIM's SDL2 loop to the process main thread on macOS SBCL, and destroys the port when the app exits
 - `sdl2.sh` — pins McCLIM 1.0.0 for SDL2 builds, registers a pinned `cl-sdl2` local project with the Apple Silicon spec on macOS ARM, and downloads `SDL2.dll` on Windows
-- `ask.sh` — task runner menu
+- `ask.sh` — task runner menu grouped by OS: MAC, LINUX, WINDOWS, then DEVELOPMENT and MAINTENANCE; packaging lives under MAC
 - `ask.d/lib.sh` — shared task helpers
-- `ask.d/setup-linux.sh` — task 1: Linux/FreeBSD setup (SBCL/Quicklisp and local project)
-- `ask.d/build.sh` — task 2: embed font and save a self-contained executable
-- `ask.d/run.sh` — task 3: run `sbcl --script main.lisp`
+- `ask.d/setup-macos.sh` — task 1: macOS setup (SBCL/Quicklisp, SDL2/SDL3 and local project)
+- `ask.d/build-mac.sh` — task 2: build the macOS SDL2 executable
+- `ask.d/dev-test-mac.sh` — task 3: macOS SDL2 dev test (`-nw` smoke test, then GUI)
 - `ask.d/dmg.sh` — task 4: build a macOS `.app` and DMG
-- `ask.d/clean.sh` — task 5: remove build outputs
-- `ask.d/dev.sh` — task 6: start the GUI and a development REPL with automatic reload on source changes
-- `ask.d/setup-windows.sh` — task 7: Windows setup (SBCL/Quicklisp, SDL2.dll and local project)
-- `ask.d/setup-macos.sh` — task 8: macOS setup (SBCL/Quicklisp, SDL2/SDL3 and local project)
+- `ask.d/setup-linux.sh` — task 5: Linux/FreeBSD setup (SBCL/Quicklisp and local project)
+- `ask.d/build-linux.sh` — task 6: build the Linux CLX executable
+- `ask.d/dev-test-linux.sh` — task 7: Linux CLX dev test (`-nw` smoke test, then GUI)
+- `ask.d/setup-windows.sh` — task 8: Windows setup (SBCL/Quicklisp, SDL2.dll and local project)
+- `ask.d/build-windows.sh` — task 9: build the Windows SDL2 executable
+- `ask.d/dev-test-windows.sh` — task 10: Windows SDL2 dev test (`-nw` smoke test, then GUI)
+- `ask.d/dev.sh` — task 11: start the GUI and a development REPL with automatic reload on source changes
+- `ask.d/run.sh` — task 12: run `sbcl --script main.lisp`
+- `ask.d/clean.sh` — task 13: remove build outputs
+- `ask.d/build.sh` — shared executable builder used by tasks 2, 6, 9 and CI; hidden from the menu
+- `ask.d/dev-test.sh` — shared dev-test helper; hidden from the menu
 - `README.md` — project title, logo and commands
 - `mctext.svg` — README logo
 - `pages/public/` — GitHub Pages site
