@@ -39,7 +39,7 @@ if [ "$missing" -ne 0 ]; then
       fi
       ;;
     *)
-      fail "unsupported platform: $(uname -s); use task 8 on macOS or task 7 on Windows"
+      fail "unsupported platform: $(uname -s); use task 1 on macOS or task 8 on Windows"
       ;;
   esac
 fi

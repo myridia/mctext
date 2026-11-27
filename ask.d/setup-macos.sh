@@ -8,7 +8,7 @@ enter
 
 case "$(uname -s)" in
   Darwin*) ;;
-  *) fail 'task 8 is macOS-only; use task 1 on Linux/FreeBSD or task 7 on Windows' ;;
+  *) fail 'task 1 is macOS-only; use task 5 on Linux/FreeBSD or task 8 on Windows' ;;
 esac
 
 missing=0

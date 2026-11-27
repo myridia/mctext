@@ -26,7 +26,7 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 - `src/theme.lisp` — Anathema theme definitions, activation and Settings status
 - `src/gui.lisp` — main frame and `clipboard-log-frame`, panes, presentation types, commands and translators
 - `src/cli.lisp` — `--list`, `--copy`, `--help` and no-window dispatch
-- `sdl2-runtime.lisp` — SDL2 runtime fix; loaded only for SDL2 builds, resets the user-event id, centers windows, moves McCLIM's SDL2 loop to the process main thread on macOS SBCL, and destroys the port when the app exits
+- `sdl2-runtime.lisp` — SDL2 runtime fix; loaded only for SDL2 builds, resets the user-event id, centers windows, moves McCLIM's SDL2 loop to the process main thread on macOS SBCL, and destroys the port and closes cl-sdl2's main-thread channel when the app exits
 - `sdl2.sh` — pins McCLIM 1.0.0 for SDL2 builds, registers a pinned `cl-sdl2` local project with the Apple Silicon spec on macOS ARM, and downloads `SDL2.dll` on Windows
 - `ask.sh` — task runner menu grouped by OS: MAC, LINUX, WINDOWS, then DEVELOPMENT and MAINTENANCE; packaging lives under MAC
 - `ask.d/lib.sh` — shared task helpers

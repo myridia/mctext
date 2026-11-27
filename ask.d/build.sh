@@ -54,13 +54,13 @@ bundle_sdl2=no
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*)
     windows=yes
-    setup_task=7
+    setup_task=8
     compression=nil
     application=' :application-type :gui'
     ;;
   Darwin*)
     windows=no
-    setup_task=8
+    setup_task=1
     compression=t
     application=
     requested_backend=${MCTEXT_BACKEND:-${MCCLIM_BACKEND:-}}
@@ -70,7 +70,7 @@ case "$(uname -s)" in
     ;;
   *)
     windows=no
-    setup_task=1
+    setup_task=5
     compression=t
     application=
     ;;
@@ -95,7 +95,7 @@ done
 ql_root=$(dirname "$ql_setup")
 [ -e "$ql_root/local-projects/mctext" ] || fail "local project missing; run task $setup_task in ask.sh"
 if [ "$windows" = yes ]; then
-  [ -f vendor/sdl2/SDL2.dll ] || fail 'SDL2.dll missing; run task 7 in ask.sh'
+  [ -f vendor/sdl2/SDL2.dll ] || fail 'SDL2.dll missing; run task 8 in ask.sh'
   export PATH="$ROOT/vendor/sdl2:$PATH"
 fi
 printf 'ok    dependencies\n'
@@ -127,7 +127,7 @@ fi
 if [ "$bundle_sdl2" = yes ]; then
   copy_mac_dylib libSDL2-2.0.0.dylib sdl2 "$exe"
   copy_mac_dylib libSDL3.dylib sdl3 dist/mctext/libSDL2-2.0.0.dylib
-  [ -f dist/mctext/libSDL2-2.0.0.dylib ] || fail 'libSDL2-2.0.0.dylib missing; run task 8 in ask.sh'
-  [ -f dist/mctext/libSDL3.dylib ] || fail 'libSDL3.dylib missing; run task 8 in ask.sh'
+  [ -f dist/mctext/libSDL2-2.0.0.dylib ] || fail 'libSDL2-2.0.0.dylib missing; run task 1 in ask.sh'
+  [ -f dist/mctext/libSDL3.dylib ] || fail 'libSDL3.dylib missing; run task 1 in ask.sh'
 fi
 printf "ok    dist/mctext\n"
