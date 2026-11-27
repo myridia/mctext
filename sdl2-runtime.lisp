@@ -32,3 +32,11 @@
           do (clim-sys:with-lock-held (mcclim-sdl2::*initialized-lock*)
                (clim-sys:condition-wait mcclim-sdl2::*initialized-cv*
                                         mcclim-sdl2::*initialized-lock*)))))
+
+#+(and sbcl darwin)
+(defun cl-user::quit-sdl2-port ()
+  (let ((port (clim:find-port)))
+    (when (typep port 'mcclim-sdl2::sdl2-port)
+      (clim:destroy-port port)))
+  (when (and (boundp 'sdl2::*main-thread-channel*) sdl2::*main-thread-channel*)
+    (sdl2:quit)))

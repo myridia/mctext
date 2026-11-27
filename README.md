@@ -118,7 +118,7 @@ Each save increments the CouchDB-style `_rev`.
 
 ## Backend
 
-macOS and Windows default to the McCLIM SDL2 backend. Windows needs `SDL2.dll` beside the executable or on `PATH`; macOS bundles `libSDL2-2.0.0.dylib` and `libSDL3.dylib` with the executable and runs the SDL loop on the main thread. Linux and FreeBSD use CLX and need a display.
+macOS and Windows default to the McCLIM SDL2 backend. Windows needs `SDL2.dll` beside the executable or on `PATH`; macOS bundles `libSDL2-2.0.0.dylib` and `libSDL3.dylib` with the executable, runs the SDL loop on the main thread, and destroys the SDL port and closes cl-sdl2's main-thread channel when the app exits, so closing the window ends the process. Linux and FreeBSD use CLX and need a display.
 
 Override the backend with:
 

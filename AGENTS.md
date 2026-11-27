@@ -26,7 +26,7 @@ The app has a main McCLIM frame with groups, snippets, an editable text pane, bu
 - `src/theme.lisp` — Anathema theme definitions, activation and Settings status
 - `src/gui.lisp` — main frame and `clipboard-log-frame`, panes, presentation types, commands and translators
 - `src/cli.lisp` — `--list`, `--copy`, `--help` and no-window dispatch
-- `sdl2-runtime.lisp` — SDL2 runtime fix; loaded only for SDL2 builds, resets the user-event id, centers windows, and on macOS SBCL moves McCLIM's SDL2 loop to the process main thread while `main.lisp` runs the app in a worker thread
+- `sdl2-runtime.lisp` — SDL2 runtime fix; loaded only for SDL2 builds, resets the user-event id, centers windows, moves McCLIM's SDL2 loop to the process main thread on macOS SBCL, and destroys the port when the app exits
 - `sdl2.sh` — pins McCLIM 1.0.0 for SDL2 builds, registers a pinned `cl-sdl2` local project with the Apple Silicon spec on macOS ARM, and downloads `SDL2.dll` on Windows
 - `ask.sh` — task runner menu
 - `ask.d/lib.sh` — shared task helpers
@@ -75,7 +75,7 @@ The user builds and runs all Lisp code. Do not compile or run Lisp code in the a
 - The watcher polls `wl-paste`, X11 CLIPBOARD/PRIMARY via `xclip`/`xsel`, `pbpaste` and PowerShell, deduplicates text, and ignores McText's own writes.
 - The log exists only in memory for one GUI session; only clicked entries are written to the JSON store. Wayland needs a compositor/portal helper for reliable background watching.
 - Store path is `~/.local/share/mctext/mctext.json` on POSIX and `%APPDATA%\McText\mctext.json` on Windows.
-- On macOS SDL2 the SDL loop stays on the process main thread while the McText frame runs in a worker thread; without both halves SDL initializes but no native window appears.
+- On macOS SDL2 the SDL loop stays on the process main thread while the McText frame runs in a worker thread; without both halves SDL initializes but no native window appears. When the frame exits, `quit-sdl2-port` destroys the SDL port and calls `sdl2:quit` to close cl-sdl2's main-thread channel; otherwise the process stays alive with no window.
 - `MCTEXT_BACKEND` overrides backend; `MCCLIM_BACKEND` is accepted as a fallback.
 - CI workflows register the checkout in `~/quicklisp/local-projects/mctext` before `ql:quickload :mctext`; the macOS workflows do this through `ask.d/setup-macos.sh`, install SDL2/SDL3, set `MCTEXT_BACKEND=sdl2`, bundle `libSDL*.dylib` with `libzstd*.dylib`, and use the macOS main-thread shim.
 

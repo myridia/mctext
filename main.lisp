@@ -59,7 +59,12 @@
 
 (defun start-main ()
   (use-bundled-font)
-  (mctext:main :args (uiop:command-line-arguments)))
+  (unwind-protect
+       (mctext:main :args (uiop:command-line-arguments))
+    #+(and sbcl darwin)
+    (when (eq cl-user::*backend* :sdl2)
+      (ignore-errors
+        (funcall (symbol-function (intern "QUIT-SDL2-PORT" "CL-USER")))))))
 
 (defun main ()
   (when (eq cl-user::*backend* :sdl2)
