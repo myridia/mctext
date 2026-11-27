@@ -1,6 +1,6 @@
 #!/bin/sh
-# id: 3
-# group: RUN
+# id: 12
+# group: DEVELOPMENT
 # desc: Run - sbcl --script main.lisp
 . "$(dirname "$0")/lib.sh"
 

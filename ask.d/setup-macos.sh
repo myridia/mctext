@@ -1,24 +1,30 @@
 #!/bin/sh
-# id: 8
-# group: SETUP
-# desc: Setup - macOS requirements
+# id: 1
+# group: MAC
+# desc: Setup - macOS (SDL2)
 . "$(dirname "$0")/lib.sh"
 
 enter
 
 case "$(uname -s)" in
   Darwin*) ;;
-  *) fail 'task 8 is macOS-only; use task 1 on Linux/FreeBSD or task 7 on Windows' ;;
+  *) fail 'task 1 is macOS-only; use task 5 on Linux/FreeBSD or task 8 on Windows' ;;
 esac
 
 missing=0
 check_base_requirements
 
-sdl2_prefix=$(brew --prefix sdl2 2>/dev/null || true)
-if [ -f "$sdl2_prefix/lib/libSDL2-2.0.0.dylib" ] || [ -f /opt/homebrew/opt/sdl2/lib/libSDL2-2.0.0.dylib ] || [ -f /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib ]; then
-  printf 'ok    sdl2\n'
+has_sdl_lib() {
+  name=$1
+  formula=$2
+  prefix=$(brew --prefix "$formula" 2>/dev/null || true)
+  [ -f "$prefix/lib/$name" ] || [ -f "/opt/homebrew/opt/$formula/lib/$name" ] || [ -f "/usr/local/opt/$formula/lib/$name" ]
+}
+
+if has_sdl_lib libSDL2-2.0.0.dylib sdl2 && has_sdl_lib libSDL3.dylib sdl3; then
+  printf 'ok    sdl2 + sdl3\n'
 else
-  printf 'miss  sdl2\n'
+  printf 'miss  sdl2/sdl3\n'
   missing=1
 fi
 
@@ -33,17 +39,16 @@ if [ "$missing" -ne 0 ]; then
   else
     fail 'brew not found; install Homebrew from https://brew.sh'
   fi
-  "$brew_bin" install sbcl curl sdl2 || fail 'brew install failed'
+  "$brew_bin" install sbcl curl sdl2 sdl3 || fail 'brew install failed'
 fi
 
 command -v sbcl >/dev/null 2>&1 || fail 'sbcl missing after install; open a new shell if PATH changed'
 printf 'ok    sbcl\n'
 
-sdl2_prefix=$(brew --prefix sdl2 2>/dev/null || true)
-if [ -f "$sdl2_prefix/lib/libSDL2-2.0.0.dylib" ] || [ -f /opt/homebrew/opt/sdl2/lib/libSDL2-2.0.0.dylib ] || [ -f /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib ]; then
-  printf 'ok    sdl2\n'
+if has_sdl_lib libSDL2-2.0.0.dylib sdl2 && has_sdl_lib libSDL3.dylib sdl3; then
+  printf 'ok    sdl2 + sdl3\n'
 else
-  fail 'sdl2 missing after install; open a new shell if PATH changed'
+  fail 'SDL2 or SDL3 missing after install; open a new shell if PATH changed'
 fi
 
 install_quicklisp

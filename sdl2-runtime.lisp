@@ -17,3 +17,26 @@
     (when (typep mirror 'mcclim-sdl2::sdl2-mirror)
       (center-sdl2-window mirror :synchronize t)))
   (call-next-method))
+
+#+(and sbcl darwin)
+(defun mcclim-sdl2::%init-port (port)
+  (log:info "Starting the port ~s on the SDL2 main thread." port)
+  (unless (mcclim-sdl2::main-thread port)
+    (setf (mcclim-sdl2::main-thread port)
+          (clim-sys:make-process
+           (lambda ()
+             (sdl2:init)
+             (sdl2:in-main-thread (:no-event t)
+               (mcclim-sdl2::%loop-port port)))))
+    (loop until mcclim-sdl2::*initialized-p*
+          do (clim-sys:with-lock-held (mcclim-sdl2::*initialized-lock*)
+               (clim-sys:condition-wait mcclim-sdl2::*initialized-cv*
+                                        mcclim-sdl2::*initialized-lock*)))))
+
+#+(and sbcl darwin)
+(defun cl-user::quit-sdl2-port ()
+  (let ((port (clim:find-port)))
+    (when (typep port 'mcclim-sdl2::sdl2-port)
+      (clim:destroy-port port)))
+  (when (and (boundp 'sdl2::*main-thread-channel*) sdl2::*main-thread-channel*)
+    (sdl2:quit)))

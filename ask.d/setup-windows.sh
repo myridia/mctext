@@ -1,7 +1,7 @@
 #!/bin/sh
-# id: 7
-# group: SETUP
-# desc: Setup - Windows requirements
+# id: 8
+# group: WINDOWS
+# desc: Setup - Windows (SDL2)
 . "$(dirname "$0")/lib.sh"
 
 enter
@@ -13,7 +13,7 @@ fail() {
 
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*) ;;
-  *) fail 'task 7 is Windows-only; use task 1 on Linux/FreeBSD or task 8 on macOS' ;;
+  *) fail 'task 8 is Windows-only; use task 5 on Linux/FreeBSD or task 1 on macOS' ;;
 esac
 
 if [ -n "${USERPROFILE:-}" ] && command -v cygpath >/dev/null 2>&1; then
@@ -133,7 +133,7 @@ if [ -e "$local_projects/mctext" ] || [ -L "$local_projects/mctext" ]; then
   else
     cmd.exe //c rmdir "$win_link" >/dev/null 2>&1 || rmdir "$local_projects/mctext" 2>/dev/null || rm -f "$local_projects/mctext" 2>/dev/null
     if [ -e "$local_projects/mctext" ] || [ -L "$local_projects/mctext" ]; then
-      fail "invalid local project at $win_link; remove it manually and rerun task 7"
+      fail "invalid local project at $win_link; remove it manually and rerun task 8"
     fi
   fi
 fi

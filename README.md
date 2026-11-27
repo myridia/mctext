@@ -20,11 +20,11 @@ Or use the task runner:
 
 ## Setup
 
-Run task 1 in `./ask.sh` on Linux or FreeBSD, task 8 on macOS, or task 7 on Windows. Each installs SBCL and Quicklisp and registers this repo as a local project; the Windows task also downloads `SDL2.dll`, and the macOS task installs SDL2. macOS uses the SDL2 backend by default, so no X server is needed.
+Run task 5 in `./ask.sh` on Linux or FreeBSD, task 1 on macOS, or task 8 on Windows. Each installs SBCL and Quicklisp and registers this repo as a local project; the Windows task also downloads `SDL2.dll`, and the macOS task installs SDL2 and SDL3. macOS uses the SDL2 backend by default, so no X server is needed.
 
 ## Interactive development
 
-Run task 6 in `./ask.sh` to start a REPL with the GUI already open. A source watcher reloads `src/*.lisp` and `mctext.asd` automatically when a file changes. The McCLIM frames use `:reinitialize-frames t`, so a reload of `src/gui.lisp` rebuilds panes and layouts in the open window.
+Run task 11 in `./ask.sh` to start a REPL with the GUI already open. A source watcher reloads `src/*.lisp` and `mctext.asd` automatically when a file changes. The McCLIM frames use `:reinitialize-frames t`, so a reload of `src/gui.lisp` rebuilds panes and layouts in the open window.
 
 ```lisp
 (clim-user:dev-reload)
@@ -39,9 +39,9 @@ Run task 6 in `./ask.sh` to start a REPL with the GUI already open. A source wat
 ## Command line
 
 ```sh
-./dist/mctext/mctext --list
-./dist/mctext/mctext --copy "Email reply"
-./dist/mctext/mctext --help
+./dist/mctext/mctext -- --list
+./dist/mctext/mctext -- --copy "Email reply"
+./dist/mctext/mctext -- --help
 ```
 
 `-nw`, `--nw` and `--no-window` also select no-window mode. Passing `--list`, `--copy` or `--help` switches to no-window mode automatically.
@@ -118,7 +118,7 @@ Each save increments the CouchDB-style `_rev`.
 
 ## Backend
 
-Windows defaults to the McCLIM SDL2 backend and needs `SDL2.dll` beside the executable or on `PATH`. Other platforms use CLX and need a display.
+macOS and Windows default to the McCLIM SDL2 backend. Windows needs `SDL2.dll` beside the executable or on `PATH`; macOS bundles `libSDL2-2.0.0.dylib` and `libSDL3.dylib` with the executable, runs the SDL loop on the main thread, and destroys the SDL port and closes cl-sdl2's main-thread channel when the app exits, so closing the window ends the process. Linux and FreeBSD use CLX and need a display.
 
 Override the backend with:
 
@@ -131,18 +131,26 @@ MCTEXT_BACKEND=sdl2 sbcl --script main.lisp
 
 ## Task runner
 
-| Task | Description |
-| --- | --- |
-| 1 | Setup: check/install SBCL, Quicklisp, McCLIM and register the local project |
-| 2 | Build: save a single SBCL executable in `bin/` and copy it to `dist/mctext/` |
-| 3 | Run: `sbcl --script main.lisp` |
-| 4 | macOS DMG (macOS only) |
-| 5 | Clean `bin/`, `dist/` and `.app` bundles |
-| 0 | Exit |
+| Section | ID | Task |
+| --- | --- | --- |
+| MAC | 1 | Setup macOS (SDL2) - SBCL, Quicklisp, SDL2/SDL3 and local project |
+| MAC | 2 | Build macOS - save an SDL2 executable in `bin/` and copy it to `dist/mctext/` |
+| MAC | 3 | Dev test macOS - smoke test `-nw`, then open the SDL2 window |
+| MAC | 4 | Package macOS - build a `.app` and DMG |
+| LINUX | 5 | Setup Linux/FreeBSD (CLX) - SBCL, Quicklisp and local project |
+| LINUX | 6 | Build Linux - save a CLX executable |
+| LINUX | 7 | Dev test Linux - smoke test `-nw`, then open the CLX window |
+| WINDOWS | 8 | Setup Windows (SDL2) - SBCL, Quicklisp, `SDL2.dll` and local project |
+| WINDOWS | 9 | Build Windows - save an SDL2 executable |
+| WINDOWS | 10 | Dev test Windows - smoke test `-nw`, then open the SDL2 window |
+| DEVELOPMENT | 11 | Dev - REPL with GUI and automatic reload |
+| DEVELOPMENT | 12 | Run - `sbcl --script main.lisp` |
+| MAINTENANCE | 13 | Clean `bin/`, `dist/` and `.app` bundles |
+|  | 0 | Exit |
 
 ## Build output
 
-Task 2 embeds `DejaVuSans.ttf` in the SBCL image and writes it to `~/.cache/mctext/` at startup. The saved executable needs no SBCL, Quicklisp or font files on the target machine.
+Task 2 embeds `DejaVuSans.ttf` in the SBCL image and writes it to `~/.cache/mctext/` at startup. The saved executable needs no SBCL, Quicklisp or font files on the target machine. macOS builds also copy `libzstd.1.dylib`, `libSDL2-2.0.0.dylib` and `libSDL3.dylib` beside the executable, and task 4 bundles them into the `.app`.
 
 ## License
 

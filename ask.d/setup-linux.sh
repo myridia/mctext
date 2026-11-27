@@ -1,7 +1,7 @@
 #!/bin/sh
-# id: 1
-# group: SETUP
-# desc: Setup - Linux/FreeBSD requirements
+# id: 5
+# group: LINUX
+# desc: Setup - Linux/FreeBSD (CLX)
 . "$(dirname "$0")/lib.sh"
 
 enter
@@ -39,7 +39,7 @@ if [ "$missing" -ne 0 ]; then
       fi
       ;;
     *)
-      fail "unsupported platform: $(uname -s); use task 8 on macOS or task 7 on Windows"
+      fail "unsupported platform: $(uname -s); use task 1 on macOS or task 8 on Windows"
       ;;
   esac
 fi

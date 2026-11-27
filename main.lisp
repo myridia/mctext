@@ -57,11 +57,26 @@
             (loop for entry in mcclim-truetype::*families/faces*
                   collect (cons (car entry) font))))))
 
+(defun start-main ()
+  (use-bundled-font)
+  (unwind-protect
+       (mctext:main :args (uiop:command-line-arguments))
+    #+(and sbcl darwin)
+    (when (eq cl-user::*backend* :sdl2)
+      (ignore-errors
+        (funcall (symbol-function (intern "QUIT-SDL2-PORT" "CL-USER")))))))
+
 (defun main ()
   (when (eq cl-user::*backend* :sdl2)
     (funcall (symbol-function (intern "RESET-SDL2-USER-EVENT-ID" "CL-USER"))))
-  (use-bundled-font)
-  (mctext:main :args (uiop:command-line-arguments)))
+  #+(and sbcl darwin)
+  (if (eq cl-user::*backend* :sdl2)
+      (let ((thread (clim-sys:make-process (function start-main)
+                                           :name "McText Main")))
+        (bt:join-thread thread))
+      (start-main))
+  #-(and sbcl darwin)
+  (start-main))
 
 (export 'main)
 
