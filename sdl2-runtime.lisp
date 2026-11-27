@@ -13,9 +13,10 @@
     ((port mcclim-sdl2::sdl2-port)
      (sheet clim-extensions:top-level-sheet-mixin))
   (declare (ignore port))
-  (let ((mirror (clim:sheet-direct-mirror sheet)))
-    (when (typep mirror 'mcclim-sdl2::sdl2-mirror)
-      (center-sdl2-window mirror :synchronize t)))
+  (unless (typep sheet 'clim-extensions:unmanaged-sheet-mixin)
+    (let ((mirror (clim:sheet-direct-mirror sheet)))
+      (when (typep mirror 'mcclim-sdl2::sdl2-mirror)
+        (center-sdl2-window mirror :synchronize t))))
   (call-next-method))
 
 #+(and sbcl darwin)
