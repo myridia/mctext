@@ -20,7 +20,7 @@ Or use the task runner:
 
 ## Setup
 
-Run task 1 in `./ask.sh` on Linux or FreeBSD, task 8 on macOS, or task 7 on Windows. Each installs SBCL and Quicklisp and registers this repo as a local project; the Windows task also downloads `SDL2.dll`, and the macOS task installs SDL2. macOS uses the SDL2 backend by default, so no X server is needed.
+Run task 1 in `./ask.sh` on Linux or FreeBSD, task 8 on macOS, or task 7 on Windows. Each installs SBCL and Quicklisp and registers this repo as a local project; the Windows task also downloads `SDL2.dll`, and the macOS task installs SDL2 and SDL3. macOS uses the SDL2 backend by default, so no X server is needed.
 
 ## Interactive development
 
@@ -118,7 +118,7 @@ Each save increments the CouchDB-style `_rev`.
 
 ## Backend
 
-Windows defaults to the McCLIM SDL2 backend and needs `SDL2.dll` beside the executable or on `PATH`. Other platforms use CLX and need a display.
+macOS and Windows default to the McCLIM SDL2 backend. Windows needs `SDL2.dll` beside the executable or on `PATH`; macOS bundles `libSDL2-2.0.0.dylib` and `libSDL3.dylib` with the executable and runs the SDL loop on the main thread. Linux and FreeBSD use CLX and need a display.
 
 Override the backend with:
 
@@ -142,7 +142,7 @@ MCTEXT_BACKEND=sdl2 sbcl --script main.lisp
 
 ## Build output
 
-Task 2 embeds `DejaVuSans.ttf` in the SBCL image and writes it to `~/.cache/mctext/` at startup. The saved executable needs no SBCL, Quicklisp or font files on the target machine.
+Task 2 embeds `DejaVuSans.ttf` in the SBCL image and writes it to `~/.cache/mctext/` at startup. The saved executable needs no SBCL, Quicklisp or font files on the target machine. macOS builds also copy `libzstd.1.dylib`, `libSDL2-2.0.0.dylib` and `libSDL3.dylib` beside the executable, and task 4 bundles them into the `.app`.
 
 ## License
 

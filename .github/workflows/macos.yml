@@ -22,11 +22,13 @@ permissions:
 jobs:
   Build:
     runs-on: macos-latest
+    env:
+      MCTEXT_BACKEND: sdl2
 
     steps:
       - name: Install
         run: |
-          brew install sbcl curl sdl2
+          brew install sbcl curl
           sbcl --version
 
       - name: Checkout
@@ -47,7 +49,7 @@ jobs:
         run: |
           xcrun vtool -show-build dist/mctext/mctext_macos
           otool -L dist/mctext/mctext_macos
-          ls -l dist/mctext/libzstd*.dylib dist/mctext/libSDL2*.dylib
+          ls -l dist/mctext/libzstd*.dylib dist/mctext/libSDL2*.dylib dist/mctext/libSDL3.dylib
           minos=$(xcrun vtool -show-build dist/mctext/mctext_macos | awk '/minos/ {print $2; exit} /version/ {print $2; exit}')
           [ "$minos" = "11.0" ] || { echo "FAIL  macOS deployment target is $minos; expected 11.0"; exit 1; }
 
@@ -79,7 +81,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: 'dist/mctext/{mctext_macos,mctext_macos.dmg,libzstd*.dylib,libSDL2*.dylib}'
+          file: 'dist/mctext/{mctext_macos,mctext_macos.dmg,libzstd*.dylib,libSDL*.dylib}'
           tag: ${{ steps.release.outputs.tag }}
           overwrite: true
           file_glob: true

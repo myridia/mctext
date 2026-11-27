@@ -18,7 +18,7 @@ esac
 exe=${MCTEXT_DMG_SOURCE:-dist/mctext/mctext}
 [ -e "$exe.exe" ] && exe="$exe.exe"
 if [ -z "${MCTEXT_DMG_SOURCE:-}" ]; then
-  "$ROOT/ask.d/build.sh"
+  sh "$ROOT/ask.d/build.sh"
 fi
 if [ ! -x "$exe" ]; then
   printf "FAIL  build first with task 2\n"
@@ -54,7 +54,7 @@ exec "$dir/mctext" "$@"
 EOF
 exe_dir=${exe%/*}
 [ "$exe_dir" = "$exe" ] && exe_dir=.
-for dylib in "$exe_dir"/libzstd*.dylib "$exe_dir"/libSDL2*.dylib; do
+for dylib in "$exe_dir"/*.dylib; do
   [ -f "$dylib" ] || continue
   ditto "$dylib" "$app/Contents/MacOS/${dylib##*/}"
 done
