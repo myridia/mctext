@@ -1,6 +1,6 @@
 #!/bin/sh
 # id: 4
-# group: PACKAGE
+# group: MAC
 # desc: Package - build macOS .app and DMG
 . "$(dirname "$0")/lib.sh"
 

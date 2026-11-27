@@ -1,7 +1,4 @@
 #!/bin/sh
-# id: 2
-# group: SETUP
-# desc: Build - save SBCL executable
 . "$(dirname "$0")/lib.sh"
 
 set -e

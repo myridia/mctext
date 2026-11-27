@@ -1,7 +1,7 @@
 #!/bin/sh
-# id: 1
-# group: SETUP
-# desc: Setup - Linux/FreeBSD requirements
+# id: 5
+# group: LINUX
+# desc: Setup - Linux/FreeBSD (CLX)
 . "$(dirname "$0")/lib.sh"
 
 enter
