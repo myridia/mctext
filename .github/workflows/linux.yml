@@ -57,7 +57,7 @@ jobs:
       - name: Test
         run: |
           echo "Test"          
-          ./dist/mctext/mctext --list
+          ./dist/mctext/mctext -- --list
 
       - name: Rename
         run: |

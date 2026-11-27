@@ -38,7 +38,7 @@ jobs:
         run: |
           echo "Compile"
           sh ask.d/setup-macos.sh
-          sh ask.d/build.sh
+          sh ask.d/build-mac.sh
 
       - name: Rename
         run: |
@@ -49,7 +49,7 @@ jobs:
         run: |
           xcrun vtool -show-build dist/mctext/mctext_macos_intel
           otool -L dist/mctext/mctext_macos_intel
-          ls -l dist/mctext/libzstd*.dylib dist/mctext/libSDL2*.dylib dist/mctext/libSDL3.dylib
+          ls -l dist/mctext/libzstd*.dylib dist/mctext/libSDL2*.dylib dist/mctext/libSDL3*.dylib
           minos=$(xcrun vtool -show-build dist/mctext/mctext_macos_intel | awk '/minos/ {print $2; exit} /version/ {print $2; exit}')
           [ "$minos" = "11.0" ] || { echo "FAIL  macOS deployment target is $minos; expected 11.0"; exit 1; }
 

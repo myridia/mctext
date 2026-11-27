@@ -39,9 +39,9 @@ Run task 11 in `./ask.sh` to start a REPL with the GUI already open. A source wa
 ## Command line
 
 ```sh
-./dist/mctext/mctext --list
-./dist/mctext/mctext --copy "Email reply"
-./dist/mctext/mctext --help
+./dist/mctext/mctext -- --list
+./dist/mctext/mctext -- --copy "Email reply"
+./dist/mctext/mctext -- --help
 ```
 
 `-nw`, `--nw` and `--no-window` also select no-window mode. Passing `--list`, `--copy` or `--help` switches to no-window mode automatically.
